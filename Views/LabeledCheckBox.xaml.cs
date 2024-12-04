@@ -16,39 +16,31 @@ using System.Windows.Shapes;
 namespace ModbusWPF.Views
 {
     /// <summary>
-    /// LabeledTextBox.xaml 的交互逻辑
+    /// LabeledCheckBox.xaml 的交互逻辑
     /// </summary>
-    public partial class LabeledTextBox : UserControl
+    public partial class LabeledCheckBox : UserControl
     {
-        public LabeledTextBox()
+        public LabeledCheckBox()
         {
             InitializeComponent();
         }
-
         public static readonly DependencyProperty LabelTextProperty =
             DependencyProperty.Register(
                 "LabelText",
                 typeof(string),
-                typeof(LabeledTextBox),
-                new PropertyMetadata("Labeled Text Box"));
+                typeof(LabeledCheckBox),
+                new PropertyMetadata(""));
 
         public string LabelText
         {
             get => (string)GetValue(LabelTextProperty);
             set => SetValue(LabelTextProperty, value);
         }
-
-        public static readonly DependencyProperty ValueTextProperty =
+        public static readonly DependencyProperty State =
             DependencyProperty.Register(
-                "ValueText",
-                typeof(string),
-                typeof(LabeledTextBox),
-                new PropertyMetadata(""));
-
-        public string ValueText
-        {
-            get => (string)GetValue(ValueTextProperty);
-            set => SetValue(ValueTextProperty, value);
-        }
+                "State",
+                typeof(bool),
+                typeof(LabeledCheckBox),
+                new PropertyMetadata(false));
     }
 }

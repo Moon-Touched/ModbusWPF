@@ -9,28 +9,16 @@ using System.Xml.Linq;
 
 namespace ModbusWPF.Models
 {
-    public class DataPoint
+    public class DataPoint(string name, string dataType, string portName, int slaveAddress, int registerAddress, bool readOnly)
     {
-        public string Name { get; set; }
-        public string PortName { get; set; }
-        public string DataType { get; set; }
-        public int SlaveAddress { get; set; }
-        public int RegisterAddress { get; set; }
-        public bool ReadOnly { get; set; }
-        public object? Control { get; set; }
-        public object? Value { get; set; }
-
-        public DataPoint(string name,  string dataType, string portName, int slaveAddress, int registerAddress, bool readOnly)
-        {
-            Name = name;
-            DataType = dataType;
-            PortName = portName;
-            SlaveAddress = slaveAddress;
-            RegisterAddress = registerAddress;
-            ReadOnly = readOnly;
-            Control = null;
-            Value = null;
-        }
+        public string Name { get; set; } = name;
+        public string PortName { get; set; } = portName;
+        public string DataType { get; set; } = dataType;
+        public int SlaveAddress { get; set; } = slaveAddress;
+        public int RegisterAddress { get; set; } = registerAddress;
+        public bool ReadOnly { get; set; } = readOnly;
+        public object? Control { get; set; } = null;
+        public object? Value { get; set; } = null;
     }
 }
 
