@@ -7,7 +7,7 @@ namespace ModbusWPF.Helper
 {
     public static class MyHelper
     {
-        public static List<DataPoint> ReadCsvFile(string filePath)
+        public static List<DataPoint> ReadDataPointCSV(string filePath)
         {
             var dataPointList = new List<DataPoint>();
             using (var reader = new StreamReader(filePath))
