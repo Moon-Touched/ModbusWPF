@@ -24,6 +24,7 @@ namespace ModbusWPF.Views
         {
             InitializeComponent();
         }
+
         public static readonly DependencyProperty LabelTextProperty =
             DependencyProperty.Register(
                 "LabelText",
@@ -36,11 +37,18 @@ namespace ModbusWPF.Views
             get => (string)GetValue(LabelTextProperty);
             set => SetValue(LabelTextProperty, value);
         }
-        public static readonly DependencyProperty State =
+
+        public static readonly DependencyProperty StateProperty =
             DependencyProperty.Register(
                 "State",
                 typeof(bool),
                 typeof(LabeledCheckBox),
                 new PropertyMetadata(false));
+
+        public bool State
+        {
+            get => (bool)GetValue(StateProperty);
+            set => SetValue(StateProperty, value);
+        }
     }
 }

@@ -1,16 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Controls;
-using System.Xml.Linq;
+﻿using System.ComponentModel;
 
 namespace ModbusWPF.Models
 {
-    public class DataPoint : INotifyPropertyChanged
+    public abstract class DataPointBase
     {
         public string Name { get; set; }
         public string PortName { get; set; }
@@ -18,15 +10,17 @@ namespace ModbusWPF.Models
         public int SlaveAddress { get; set; }
         public int RegisterAddress { get; set; }
         public bool ReadOnly { get; set; }
-        public object? Control { get; set; }
+    }
 
-        private object? _value;
-        public object? Value
+    public class BoolDataPoint : DataPointBase,INotifyPropertyChanged
+    {
+        private bool _value;
+        public bool Value
         {
             get => _value;
             set
             {
-                if (_value != value)
+                if (!(_value == value))
                 {
                     _value = value;
                     OnPropertyChanged(nameof(Value));
@@ -41,7 +35,7 @@ namespace ModbusWPF.Models
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
-        public DataPoint(string name, string dataType, string portName, int slaveAddress, int registerAddress, bool readOnly)
+        public BoolDataPoint(string name, string dataType, string portName, int slaveAddress, int registerAddress, bool readOnly, bool initialValue)
         {
             Name = name;
             DataType = dataType;
@@ -49,7 +43,75 @@ namespace ModbusWPF.Models
             SlaveAddress = slaveAddress;
             RegisterAddress = registerAddress;
             ReadOnly = readOnly;
+            Value = initialValue;
+        }
+    }
+    public class Int16DataPoint : DataPointBase, INotifyPropertyChanged
+    {
+        private short _value;
+        public short Value
+        {
+            get => _value;
+            set
+            {
+                if (!(_value == value))
+                {
+                    _value = value;
+                    OnPropertyChanged(nameof(Value));
+                }
+            }
+        }
+
+        public event PropertyChangedEventHandler? PropertyChanged;
+
+        protected virtual void OnPropertyChanged(string propertyName)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+
+        public Int16DataPoint(string name, string dataType, string portName, int slaveAddress, int registerAddress, bool readOnly, short initialValue)
+        {
+            Name = name;
+            DataType = dataType;
+            PortName = portName;
+            SlaveAddress = slaveAddress;
+            RegisterAddress = registerAddress;
+            ReadOnly = readOnly;
+            Value = initialValue;
+        }
+    }
+    public class Float32DataPoint : DataPointBase, INotifyPropertyChanged
+    {
+        private float _value;
+        public float Value
+        {
+            get => _value;
+            set
+            {
+                if (!(_value == value))
+                {
+                    _value = value;
+                    OnPropertyChanged(nameof(Value));
+                }
+            }
+        }
+
+        public event PropertyChangedEventHandler? PropertyChanged;
+
+        protected virtual void OnPropertyChanged(string propertyName)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+
+        public Float32DataPoint(string name, string dataType, string portName, int slaveAddress, int registerAddress, bool readOnly, float initialValue)
+        {
+            Name = name;
+            DataType = dataType;
+            PortName = portName;
+            SlaveAddress = slaveAddress;
+            RegisterAddress = registerAddress;
+            ReadOnly = readOnly;
+            Value = initialValue;
         }
     }
 }
-

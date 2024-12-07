@@ -9,8 +9,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
-using ModbusWPF.Helper;
-using ModbusWPF.Models;
+using ModbusWPF.ViewModel;
 
 namespace ModbusWPF.Views
 {
@@ -22,8 +21,12 @@ namespace ModbusWPF.Views
         public MainWindow()
         {
             InitializeComponent();
+            DataContext = new DataPointViewModel();
         }
-
+        private void MainGrid_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            MainGrid.Focus();
+        }
 
     }
 }

@@ -6,8 +6,11 @@
         xmlns:local="clr-namespace:ModbusWPF.Views"
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800">
-    <Grid x:Name="MainGrid">
-        <local:LabeledCheckBox x:Name="a" LabelText="a" HorizontalAlignment="Left" Margin="32,10,0,0" VerticalAlignment="Top"/>
-
+    <Grid x:Name="MainGrid" MouseDown="MainGrid_MouseDown">
+        <local:LabeledCheckBox x:Name="Alarm_1" LabelText="Alarm_1" HorizontalAlignment="Left" Margin="32,10,0,0" VerticalAlignment="Top"
+                               State="{Binding DataPointsDictionary[Alarm_1].Value, Mode=TwoWay}"/>
+        <local:LabeledTextBox x:Name="Alarm_1_Value" LabelText="Alarm_1_Value" HorizontalAlignment="Left" Margin="32,45,0,0" VerticalAlignment="Top"
+                              ValueText="{Binding DataPointsDictionary[Alarm_1_Value].Value, Mode=TwoWay,UpdateSourceTrigger=LostFocus}"/>
     </Grid>
 </Window>
+
