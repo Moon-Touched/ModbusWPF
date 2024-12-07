@@ -25,7 +25,7 @@ namespace ModbusWPF.Views
         }
         private void MainGrid_MouseDown(object sender, MouseButtonEventArgs e)
         {
-            MainGrid.Focus();
+            Keyboard.ClearFocus();
         }
 
     }
