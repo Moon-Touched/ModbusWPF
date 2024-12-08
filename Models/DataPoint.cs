@@ -10,6 +10,8 @@ namespace ModbusWPF.Models
         public int SlaveAddress { get; set; }
         public int RegisterAddress { get; set; }
         public bool ReadOnly { get; set; }
+        public bool FromSlave { get; set; }
+
     }
 
     public class BoolDataPoint : DataPointBase
@@ -43,6 +45,7 @@ namespace ModbusWPF.Models
             SlaveAddress = slaveAddress;
             RegisterAddress = registerAddress;
             ReadOnly = readOnly;
+            FromSlave = true;
             Value = initialValue;
         }
     }
@@ -77,6 +80,7 @@ namespace ModbusWPF.Models
             SlaveAddress = slaveAddress;
             RegisterAddress = registerAddress;
             ReadOnly = readOnly;
+            FromSlave = true;
             Value = initialValue;
         }
     }
@@ -111,6 +115,7 @@ namespace ModbusWPF.Models
             SlaveAddress = slaveAddress;
             RegisterAddress = registerAddress;
             ReadOnly = readOnly;
+            FromSlave = true;
             Value = initialValue;
         }
     }

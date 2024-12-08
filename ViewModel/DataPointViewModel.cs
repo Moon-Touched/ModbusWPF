@@ -63,24 +63,22 @@ namespace ModbusWPF.ViewModel
         {
             DataPointBase dataPoint = (DataPointBase)sender; // 获取触发事件的对象
 
-            if (!dataPoint.ReadOnly) // 判断是否为只读
+            switch (dataPoint.DataType)
             {
-                switch (dataPoint.DataType)
-                {
-                    case "bool":
-                        BoolDataPoint boolDataPoint = (BoolDataPoint)sender;
-                        ModbusHelper.WriteBoolData(boolDataPoint, boolDataPoint.Value);
-                        break;
-                    case "int16":
-                        Int16DataPoint int16DataPoint = (Int16DataPoint)sender;
-                        ModbusHelper.WriteInt16Data(int16DataPoint, (ushort)int16DataPoint.Value);
-                        break;
-                    case "float32":
-                        Float32DataPoint float32DataPoint = (Float32DataPoint)sender;
-                        ModbusHelper.WriteFloat32Data(float32DataPoint, float32DataPoint.Value);
-                        break;
-                }
+                case "bool":
+                    BoolDataPoint boolDataPoint = (BoolDataPoint)sender;
+                    ModbusHelper.WriteBoolData(boolDataPoint, boolDataPoint.Value);
+                    break;
+                case "int16":
+                    Int16DataPoint int16DataPoint = (Int16DataPoint)sender;
+                    ModbusHelper.WriteInt16Data(int16DataPoint, (ushort)int16DataPoint.Value);
+                    break;
+                case "float32":
+                    Float32DataPoint float32DataPoint = (Float32DataPoint)sender;
+                    ModbusHelper.WriteFloat32Data(float32DataPoint, float32DataPoint.Value);
+                    break;
             }
+
         }
 
     }
