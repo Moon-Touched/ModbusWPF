@@ -12,7 +12,7 @@ namespace ModbusWPF.Models
         public bool ReadOnly { get; set; }
     }
 
-    public class BoolDataPoint : DataPointBase,INotifyPropertyChanged
+    public class BoolDataPoint : DataPointBase
     {
         private bool _value;
         public bool Value
@@ -46,7 +46,7 @@ namespace ModbusWPF.Models
             Value = initialValue;
         }
     }
-    public class Int16DataPoint : DataPointBase, INotifyPropertyChanged
+    public class Int16DataPoint : DataPointBase
     {
         private short _value;
         public short Value
@@ -80,7 +80,7 @@ namespace ModbusWPF.Models
             Value = initialValue;
         }
     }
-    public class Float32DataPoint : DataPointBase, INotifyPropertyChanged
+    public class Float32DataPoint : DataPointBase
     {
         private float _value;
         public float Value

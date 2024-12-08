@@ -54,7 +54,7 @@ namespace ModbusWPF.Helper
             byte slaveAddress = (byte)dataPoint.SlaveAddress;
             ushort registerAddress = (ushort)dataPoint.RegisterAddress;
 
-            master.WriteSingleCoil(slaveAddress, registerAddress, Convert.ToBoolean(value));
+            master.WriteSingleCoil(slaveAddress, registerAddress, value);
         }
 
         public void ReadInt16Data(Int16DataPoint dataPoint)
