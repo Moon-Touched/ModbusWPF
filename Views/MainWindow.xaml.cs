@@ -21,13 +21,15 @@ namespace ModbusWPF.Views
         public MainWindow()
         {
             InitializeComponent();
-            DataContext = new DataPointViewModel();
+            DataPointViewModel dataPointViewModel = new DataPointViewModel();
+            DataContext = dataPointViewModel;
+            dataPointViewModel.ProcessTaskQueue();
+
         }
         private void MainGrid_MouseDown(object sender, MouseButtonEventArgs e)
         {
             FocusManager.SetFocusedElement(this, null);
             Keyboard.ClearFocus();
-            Debug.WriteLine("MainGrid_MouseDown");
         }
     }
 }

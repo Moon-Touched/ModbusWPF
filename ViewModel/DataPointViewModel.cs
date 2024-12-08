@@ -13,11 +13,15 @@ namespace ModbusWPF.ViewModel
     {
         public ModBusHelper ModbusHelper { get; set; }
         public Dictionary<string, DataPointBase> DataPointsDictionary { get; set; }
+        private Stack<(string taskType, string dataName)> taskStack;
 
         public DataPointViewModel()
         {
+            //DataPointsDictionary的key是数据点的名字，value是数据点对象
             DataPointsDictionary = new Dictionary<string, DataPointBase>();
             ModbusHelper = new ModBusHelper();
+            //taskType使用"R","W"表示读写,dataName用于从DataPointsDictionary中获取数据点对象
+            taskStack = new Stack<(string taskType, string dataName)>();
             LoadDataPointsFromCsv("C:/codes/ModbusWPF/data_points.csv");
         }
 
@@ -59,26 +63,64 @@ namespace ModbusWPF.ViewModel
                 };
             }
         }
+
+        public void ProcessTaskQueue()
+        {
+            if (taskStack.Count == 0)
+            {
+                // 如果队列为空，添加所有读取任务
+                foreach (var dataName in DataPointsDictionary.Keys)
+                {
+                    taskStack.Push(("R", dataName));
+                }
+            }
+            else
+            {
+                // 从队列中取出任务
+                var (taskType, dataName) = taskStack.Pop();
+                var dataPoint = DataPointsDictionary[dataName];
+                if (taskType == "R")
+                {
+                    switch (dataPoint.DataType)
+                    {
+                        case "bool":
+                            ModbusHelper.ReadBoolData((BoolDataPoint)dataPoint);
+                            break;
+                        case "int16":
+                            ModbusHelper.ReadInt16Data((Int16DataPoint)dataPoint);
+                            break;
+                        case "float32":
+                            ModbusHelper.ReadFloat32Data((Float32DataPoint)dataPoint);
+                            break;
+                    }
+                    OnPropertyChanged(dataName);
+                }
+                else if (taskType == "W")
+                {
+                    switch (dataPoint.DataType)
+                    {
+                        case "bool":
+                            ModbusHelper.WriteBoolData((BoolDataPoint)dataPoint);
+                            break;
+                        case "int16":
+                            ModbusHelper.WriteInt16Data((Int16DataPoint)dataPoint);
+                            break;
+                        case "float32":
+                            ModbusHelper.WriteFloat32Data((Float32DataPoint)dataPoint);
+                            break;
+                    }
+                    // 写入完成后，立即添加一个读取任务以确认成功写入。
+                    // 如果写入失败，则仍显示原来的值
+                    taskStack.Push(("R", dataName));
+                }
+            }
+        }
+
         private void DataPointPropertyChangedHandler(object sender, PropertyChangedEventArgs e)
         {
-            DataPointBase dataPoint = (DataPointBase)sender; // 获取触发事件的对象
-
-            switch (dataPoint.DataType)
-            {
-                case "bool":
-                    BoolDataPoint boolDataPoint = (BoolDataPoint)sender;
-                    ModbusHelper.WriteBoolData(boolDataPoint, boolDataPoint.Value);
-                    break;
-                case "int16":
-                    Int16DataPoint int16DataPoint = (Int16DataPoint)sender;
-                    ModbusHelper.WriteInt16Data(int16DataPoint, (ushort)int16DataPoint.Value);
-                    break;
-                case "float32":
-                    Float32DataPoint float32DataPoint = (Float32DataPoint)sender;
-                    ModbusHelper.WriteFloat32Data(float32DataPoint, float32DataPoint.Value);
-                    break;
-            }
-
+            DataPointBase dataPoint = (DataPointBase)sender; 
+            // 将写入任务加入栈顶
+            taskStack.Push(("W", dataPoint.Name));
         }
 
     }

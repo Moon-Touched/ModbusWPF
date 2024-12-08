@@ -6,6 +6,7 @@ using NModbus.Serial;
 using NModbus.IO;
 using ModbusWPF.Models;
 using NModbus.Device;
+using NModbus.Extensions.Enron;
 
 namespace ModbusWPF.Helper
 {
@@ -21,9 +22,9 @@ namespace ModbusWPF.Helper
 
         private void InitializeSerialPorts()
         {
-            var port2 = new SerialPort("COM2", 9600, Parity.None, 8, StopBits.One);
+            var port8 = new SerialPort("COM8", 9600, Parity.None, 8, StopBits.One);
 
-            _serialPortDictionary["COM2"] = port2;
+            _serialPortDictionary["COM2"] = port8;
 
             foreach (var port in _serialPortDictionary.Values)
             {
@@ -48,13 +49,13 @@ namespace ModbusWPF.Helper
             dataPoint.Value = coilStatus;
         }
 
-        public void WriteBoolData(BoolDataPoint dataPoint, bool value)
+        public void WriteBoolData(BoolDataPoint dataPoint)
         {
             var master = _modbusMasterDictionary[dataPoint.PortName];
             byte slaveAddress = (byte)dataPoint.SlaveAddress;
             ushort registerAddress = (ushort)dataPoint.RegisterAddress;
 
-            master.WriteSingleCoil(slaveAddress, registerAddress, value);
+            master.WriteSingleCoil(slaveAddress, registerAddress, dataPoint.Value);
         }
 
         public void ReadInt16Data(Int16DataPoint dataPoint)
@@ -67,13 +68,13 @@ namespace ModbusWPF.Helper
             dataPoint.Value = (short)intValue;
         }
 
-        public void WriteInt16Data(Int16DataPoint dataPoint, ushort value)
+        public void WriteInt16Data(Int16DataPoint dataPoint)
         {
             var master = _modbusMasterDictionary[dataPoint.PortName];
             byte slaveAddress = (byte)dataPoint.SlaveAddress;
             ushort registerAddress = (ushort)dataPoint.RegisterAddress;
 
-            master.WriteSingleRegister(slaveAddress, registerAddress, value);
+            master.WriteSingleRegister(slaveAddress, registerAddress, (ushort)dataPoint.Value);
         }
 
         public void ReadFloat32Data(Float32DataPoint dataPoint)
@@ -87,12 +88,12 @@ namespace ModbusWPF.Helper
             dataPoint.Value = floatValue;
         }
 
-        public void WriteFloat32Data(Float32DataPoint dataPoint, float value)
+        public void WriteFloat32Data(Float32DataPoint dataPoint)
         {
             var master = _modbusMasterDictionary[dataPoint.PortName];
             byte slaveAddress = (byte)dataPoint.SlaveAddress;
             ushort registerAddress = (ushort)dataPoint.RegisterAddress;
-            var bytes = BitConverter.GetBytes(value);
+            var bytes = BitConverter.GetBytes(dataPoint.Value);
             ushort[] data = { BitConverter.ToUInt16(bytes, 0), BitConverter.ToUInt16(bytes, 2) };
             master.WriteMultipleRegisters(slaveAddress, registerAddress, data);
         }
