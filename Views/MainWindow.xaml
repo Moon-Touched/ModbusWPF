@@ -1,39 +1,45 @@
-﻿<Window x:Class="ModbusWPF.Views.MainWindow"
+﻿<Window
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:ModbusWPF.Views"
+        xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes" 
+        x:Class="ModbusWPF.Views.MainWindow"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
+        Title="MainWindow" Height="450" Width="800"
+        Style="{StaticResource MaterialDesignWindow}">
+
     <Grid x:Name="MainGrid" MouseDown="MainGrid_MouseDown" Background="Transparent">
-        <local:LabeledCheckBox x:Name="COM_Write" LabelText="COM_Write" HorizontalAlignment="Left" Margin="32,10,0,0" VerticalAlignment="Top"
+        <local:LabeledToggleSwitch x:Name="COM_Write" LabelText="COM_Write" HorizontalAlignment="Left" Margin="32,10,0,0" VerticalAlignment="Top"
                                IsHitTestVisible="False"
                                State="{Binding DataPointsDictionary[COM_Write].Value, Mode=TwoWay}"/>
-        
-        <local:LabeledCheckBox x:Name="Auto_Manual" LabelText="Auto_Manual" HorizontalAlignment="Left" Margin="150,10,0,0" VerticalAlignment="Top"
+
+        <local:LabeledToggleSwitch x:Name="Auto_Manual" LabelText="Auto_Manual" HorizontalAlignment="Left" Margin="150,10,0,0" VerticalAlignment="Top"
                                IsHitTestVisible="True"
                                State="{Binding DataPointsDictionary[Auto_Manual].Value, Mode=TwoWay}"/>
-        
-        <local:LabeledCheckBox x:Name="Alarm_1" LabelText="Alarm_1" HorizontalAlignment="Left" Margin="150,170,0,0" VerticalAlignment="Top"
+
+        <local:LabeledAlarm x:Name="Alarm_1" LabelText="Alarm_1" HorizontalAlignment="Left" Margin="150,170,0,0" VerticalAlignment="Top"
                                IsHitTestVisible="False"
                                State="{Binding DataPointsDictionary[Alarm_1].Value, Mode=TwoWay}"/>
-        
+
         <local:LabeledTextBox x:Name="PV" LabelText="PV" HorizontalAlignment="Left" Margin="32,166,0,0" VerticalAlignment="Top" Width="66"
                               IsHitTestVisible="False"
                               ValueText="{Binding DataPointsDictionary[PV].Value, Mode=TwoWay}"/>
-        
-        <local:LabeledTextBox x:Name="SV" LabelText="SV" HorizontalAlignment="Left" Margin="32,205,0,0" VerticalAlignment="Top" Width="66"
+
+        <local:LabeledTextBox x:Name="SV" LabelText="SV" HorizontalAlignment="Left" Margin="32,217,0,0" VerticalAlignment="Top" Width="66"
                               IsHitTestVisible="True"
                               ValueText="{Binding DataPointsDictionary[SV].Value, Mode=TwoWay}"/>
-        
-        <local:LabeledTextBox x:Name="Output_Power" LabelText="Output_Power" HorizontalAlignment="Left" Margin="32,242,0,0" VerticalAlignment="Top" Width="66"
+
+        <local:LabeledTextBox x:Name="Output_Power" LabelText="Output_Power" HorizontalAlignment="Left" Margin="32,266,0,0" VerticalAlignment="Top" Width="95"
                               IsHitTestVisible="True"
                               ValueText="{Binding DataPointsDictionary[Output_Power].Value, Mode=TwoWay}"/>
-        
+
         <local:LabeledTextBox x:Name="Alarm_1_Value" LabelText="Alarm_1_Value" HorizontalAlignment="Left" Margin="150,205,0,0" VerticalAlignment="Top" Width="90"
                               IsHitTestVisible="True"
                               ValueText="{Binding DataPointsDictionary[Alarm_1_Value].Value, Mode=TwoWay}"/>
+        
+
     </Grid>
 </Window>
 

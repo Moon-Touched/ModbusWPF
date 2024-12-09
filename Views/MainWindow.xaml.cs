@@ -24,10 +24,10 @@ namespace ModbusWPF.Views
         public MainWindow()
         {
             InitializeComponent();
-            string basePath = AppDomain.CurrentDomain.BaseDirectory;
+            string basePath = "C:/codes/ModbusWPF";
             string dataCSVPath = Path.Combine(basePath,  "data_points.csv");
             string portCSVPath = Path.Combine(basePath,  "port_info.csv");
-            dataPointViewModel = new DataPointViewModel("C:/codes/ModbusWPF/data_points.csv", "C:/codes/ModbusWPF/data_points.csv");
+            dataPointViewModel = new DataPointViewModel(dataCSVPath, portCSVPath);
             DataContext = dataPointViewModel;
 
             // 在窗口加载完成后启动任务
