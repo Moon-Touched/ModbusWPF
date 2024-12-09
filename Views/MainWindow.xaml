@@ -7,27 +7,33 @@
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800">
     <Grid x:Name="MainGrid" MouseDown="MainGrid_MouseDown" Background="Transparent">
-        <local:LabeledCheckBox LabelText="COM_Write" HorizontalAlignment="Left" Margin="32,10,0,0" VerticalAlignment="Top"
-                               State="{Binding DataPointsDictionary[COM_Write].Value, Mode=TwoWay}" 
-                               IsEnabled="False"/>
-        <local:LabeledCheckBox LabelText="Auto_Manual" HorizontalAlignment="Left" Margin="150,10,0,0" VerticalAlignment="Top"
-                               State="{Binding DataPointsDictionary[Auto_Manual].Value, Mode=TwoWay}"
-                               IsEnabled="True"/>
-        <local:LabeledCheckBox LabelText="Alarm_1" HorizontalAlignment="Left" Margin="150,170,0,0" VerticalAlignment="Top"
-                               State="{Binding DataPointsDictionary[Alarm_1].Value, Mode=TwoWay}" 
-                               IsEnabled="False"/>
-        <local:LabeledTextBox LabelText="PV" HorizontalAlignment="Left" Margin="32,166,0,0" VerticalAlignment="Top"
-                              ValueText="{Binding DataPointsDictionary[PV].Value, Mode=TwoWay,UpdateSourceTrigger=LostFocus}" 
-                              IsEnabled="False" Width="66"/>
-        <local:LabeledTextBox LabelText="SV" HorizontalAlignment="Left" Margin="32,205,0,0" VerticalAlignment="Top"
-                              ValueText="{Binding DataPointsDictionary[SV].Value, Mode=TwoWay,UpdateSourceTrigger=LostFocus}"
-                              IsEnabled="True" Width="66"/>
-        <local:LabeledTextBox LabelText="Output_Power" HorizontalAlignment="Left" Margin="32,242,0,0" VerticalAlignment="Top"
-                              ValueText="{Binding DataPointsDictionary[Output_Power].Value, Mode=TwoWay,UpdateSourceTrigger=LostFocus}"
-                              IsEnabled="True"/>
-        <local:LabeledTextBox LabelText="Alarm_1_Value" HorizontalAlignment="Left" Margin="150,205,0,0" VerticalAlignment="Top"
-                              ValueText="{Binding DataPointsDictionary[Alarm_1_Value].Value, Mode=TwoWay,UpdateSourceTrigger=LostFocus}"
-                              IsEnabled="True"/>
+        <local:LabeledCheckBox x:Name="COM_Write" LabelText="COM_Write" HorizontalAlignment="Left" Margin="32,10,0,0" VerticalAlignment="Top"
+                               IsHitTestVisible="False"
+                               State="{Binding DataPointsDictionary[COM_Write].Value, Mode=TwoWay}"/>
+        
+        <local:LabeledCheckBox x:Name="Auto_Manual" LabelText="Auto_Manual" HorizontalAlignment="Left" Margin="150,10,0,0" VerticalAlignment="Top"
+                               IsHitTestVisible="True"
+                               State="{Binding DataPointsDictionary[Auto_Manual].Value, Mode=TwoWay}"/>
+        
+        <local:LabeledCheckBox x:Name="Alarm_1" LabelText="Alarm_1" HorizontalAlignment="Left" Margin="150,170,0,0" VerticalAlignment="Top"
+                               IsHitTestVisible="False"
+                               State="{Binding DataPointsDictionary[Alarm_1].Value, Mode=TwoWay}"/>
+        
+        <local:LabeledTextBox x:Name="PV" LabelText="PV" HorizontalAlignment="Left" Margin="32,166,0,0" VerticalAlignment="Top" Width="66"
+                              IsHitTestVisible="False"
+                              ValueText="{Binding DataPointsDictionary[PV].Value, Mode=TwoWay}"/>
+        
+        <local:LabeledTextBox x:Name="SV" LabelText="SV" HorizontalAlignment="Left" Margin="32,205,0,0" VerticalAlignment="Top" Width="66"
+                              IsHitTestVisible="True"
+                              ValueText="{Binding DataPointsDictionary[SV].Value, Mode=TwoWay}"/>
+        
+        <local:LabeledTextBox x:Name="Output_Power" LabelText="Output_Power" HorizontalAlignment="Left" Margin="32,242,0,0" VerticalAlignment="Top" Width="66"
+                              IsHitTestVisible="True"
+                              ValueText="{Binding DataPointsDictionary[Output_Power].Value, Mode=TwoWay}"/>
+        
+        <local:LabeledTextBox x:Name="Alarm_1_Value" LabelText="Alarm_1_Value" HorizontalAlignment="Left" Margin="150,205,0,0" VerticalAlignment="Top" Width="66"
+                              IsHitTestVisible="True"
+                              ValueText="{Binding DataPointsDictionary[Alarm_1_Value].Value, Mode=TwoWay}"/>
     </Grid>
 </Window>
 

@@ -7,6 +7,8 @@ using NModbus.IO;
 using ModbusWPF.Models;
 using NModbus.Device;
 using NModbus.Extensions.Enron;
+using System.Diagnostics;
+using System.Windows;
 
 namespace ModbusWPF.Helper
 {
@@ -22,9 +24,13 @@ namespace ModbusWPF.Helper
 
         private void InitializeSerialPorts()
         {
-            var port8 = new SerialPort("COM8", 9600, Parity.None, 8, StopBits.One);
+            var port8 = new SerialPort("COM3", 9600, Parity.None, 8, StopBits.One)
+            {
+                ReadTimeout = 1000, // 读操作超时时间（毫秒）
+                WriteTimeout = 1000 // 写操作超时时间（毫秒）
+            }; 
 
-            _serialPortDictionary["COM2"] = port8;
+            _serialPortDictionary["COM3"] = port8;
 
             foreach (var port in _serialPortDictionary.Values)
             {
@@ -35,7 +41,7 @@ namespace ModbusWPF.Helper
             }
 
             var factory = new ModbusFactory();
-            _modbusMasterDictionary["COM2"] = factory.CreateRtuMaster(new SerialPortAdapter(_serialPortDictionary["COM2"]));
+            _modbusMasterDictionary["COM3"] = factory.CreateRtuMaster(new SerialPortAdapter(_serialPortDictionary["COM3"]));
         }
 
         //向从机发送读取请求并自动更新DataPoint
@@ -45,8 +51,9 @@ namespace ModbusWPF.Helper
             byte slaveAddress = (byte)dataPoint.SlaveAddress;
             ushort registerAddress = (ushort)dataPoint.RegisterAddress;
 
-            bool coilStatus = master.ReadCoils(slaveAddress, registerAddress, 1)[0];
+            bool coilStatus = master.ReadCoilsAsync(slaveAddress, registerAddress, 1).Result[0];
             dataPoint.Value = coilStatus;
+            Debug.WriteLine(dataPoint.Name + ":" + dataPoint.Value);
         }
 
         public void WriteBoolData(BoolDataPoint dataPoint)
@@ -55,7 +62,7 @@ namespace ModbusWPF.Helper
             byte slaveAddress = (byte)dataPoint.SlaveAddress;
             ushort registerAddress = (ushort)dataPoint.RegisterAddress;
 
-            master.WriteSingleCoil(slaveAddress, registerAddress, dataPoint.Value);
+            master.WriteSingleCoilAsync(slaveAddress, registerAddress, dataPoint.Value);
         }
 
         public void ReadInt16Data(Int16DataPoint dataPoint)
@@ -64,8 +71,9 @@ namespace ModbusWPF.Helper
             byte slaveAddress = (byte)dataPoint.SlaveAddress;
             ushort registerAddress = (ushort)dataPoint.RegisterAddress;
 
-            ushort intValue = master.ReadHoldingRegisters(slaveAddress, registerAddress, 1)[0];
+            ushort intValue = master.ReadHoldingRegistersAsync(slaveAddress, registerAddress, 1).Result[0];
             dataPoint.Value = (short)intValue;
+            Debug.WriteLine(dataPoint.Name + ":" + dataPoint.Value);
         }
 
         public void WriteInt16Data(Int16DataPoint dataPoint)
@@ -74,7 +82,7 @@ namespace ModbusWPF.Helper
             byte slaveAddress = (byte)dataPoint.SlaveAddress;
             ushort registerAddress = (ushort)dataPoint.RegisterAddress;
 
-            master.WriteSingleRegister(slaveAddress, registerAddress, (ushort)dataPoint.Value);
+            master.WriteSingleRegisterAsync(slaveAddress, registerAddress, (ushort)dataPoint.Value);
         }
 
         public void ReadFloat32Data(Float32DataPoint dataPoint)
@@ -83,9 +91,10 @@ namespace ModbusWPF.Helper
             byte slaveAddress = (byte)dataPoint.SlaveAddress;
             ushort registerAddress = (ushort)dataPoint.RegisterAddress;
 
-            ushort[] registersFloat32 = master.ReadHoldingRegisters(slaveAddress, registerAddress, 2);
+            ushort[] registersFloat32 = master.ReadHoldingRegistersAsync(slaveAddress, registerAddress, 2).Result;
             float floatValue = BitConverter.ToSingle(BitConverter.GetBytes(registersFloat32[0] << 16 | registersFloat32[1]), 0); ;
             dataPoint.Value = floatValue;
+            Debug.WriteLine(dataPoint.Name + ":" + dataPoint.Value);
         }
 
         public void WriteFloat32Data(Float32DataPoint dataPoint)
@@ -95,7 +104,7 @@ namespace ModbusWPF.Helper
             ushort registerAddress = (ushort)dataPoint.RegisterAddress;
             var bytes = BitConverter.GetBytes(dataPoint.Value);
             ushort[] data = { BitConverter.ToUInt16(bytes, 0), BitConverter.ToUInt16(bytes, 2) };
-            master.WriteMultipleRegisters(slaveAddress, registerAddress, data);
+            master.WriteMultipleRegistersAsync(slaveAddress, registerAddress, data);
         }
 
         public void Close()

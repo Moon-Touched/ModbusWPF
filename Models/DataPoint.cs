@@ -2,7 +2,7 @@
 
 namespace ModbusWPF.Models
 {
-    public abstract class DataPointBase
+    public abstract class DataPointBase: INotifyPropertyChanged
     {
         public string Name { get; set; }
         public string PortName { get; set; }
@@ -11,6 +11,13 @@ namespace ModbusWPF.Models
         public int RegisterAddress { get; set; }
         public bool ReadOnly { get; set; }
         public bool FromSlave { get; set; }
+
+        public event PropertyChangedEventHandler? PropertyChanged;
+
+        protected virtual void OnPropertyChanged(string propertyName)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
 
     }
 
@@ -30,13 +37,6 @@ namespace ModbusWPF.Models
             }
         }
 
-        public event PropertyChangedEventHandler? PropertyChanged;
-
-        protected virtual void OnPropertyChanged(string propertyName)
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-        }
-
         public BoolDataPoint(string name, string dataType, string portName, int slaveAddress, int registerAddress, bool readOnly, bool initialValue)
         {
             Name = name;
@@ -49,7 +49,7 @@ namespace ModbusWPF.Models
             Value = initialValue;
         }
     }
-    public class Int16DataPoint : DataPointBase
+    public class Int16DataPoint : DataPointBase, INotifyPropertyChanged
     {
         private short _value;
         public short Value
@@ -65,13 +65,6 @@ namespace ModbusWPF.Models
             }
         }
 
-        public event PropertyChangedEventHandler? PropertyChanged;
-
-        protected virtual void OnPropertyChanged(string propertyName)
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-        }
-
         public Int16DataPoint(string name, string dataType, string portName, int slaveAddress, int registerAddress, bool readOnly, short initialValue)
         {
             Name = name;
@@ -84,7 +77,7 @@ namespace ModbusWPF.Models
             Value = initialValue;
         }
     }
-    public class Float32DataPoint : DataPointBase
+    public class Float32DataPoint : DataPointBase, INotifyPropertyChanged
     {
         private float _value;
         public float Value
@@ -98,13 +91,6 @@ namespace ModbusWPF.Models
                     OnPropertyChanged(nameof(Value));
                 }
             }
-        }
-
-        public event PropertyChangedEventHandler? PropertyChanged;
-
-        protected virtual void OnPropertyChanged(string propertyName)
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
         public Float32DataPoint(string name, string dataType, string portName, int slaveAddress, int registerAddress, bool readOnly, float initialValue)

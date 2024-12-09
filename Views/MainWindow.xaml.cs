@@ -9,6 +9,8 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using System.Windows.Threading;
+using ModbusWPF.Models;
 using ModbusWPF.ViewModel;
 
 namespace ModbusWPF.Views
@@ -18,14 +20,22 @@ namespace ModbusWPF.Views
     /// </summary>
     public partial class MainWindow : Window
     {
+        private DataPointViewModel dataPointViewModel;
         public MainWindow()
         {
             InitializeComponent();
-            DataPointViewModel dataPointViewModel = new DataPointViewModel();
+            dataPointViewModel = new DataPointViewModel();
             DataContext = dataPointViewModel;
-            dataPointViewModel.ProcessTaskQueue();
 
+            // 在窗口加载完成后启动任务
+            Loaded += (sender, args) =>
+            {
+                // 使用Task.Run异步执行任务队列处理
+               Task.Run(() => dataPointViewModel.ProcessTaskQueue());
+            };
         }
+        
+
         private void MainGrid_MouseDown(object sender, MouseButtonEventArgs e)
         {
             FocusManager.SetFocusedElement(this, null);

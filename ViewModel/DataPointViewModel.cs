@@ -6,6 +6,7 @@ using ModbusWPF.Models;
 using ModbusWPF.Helper;
 using System.ComponentModel;
 using System.Diagnostics.Eventing.Reader;
+using System.Windows.Threading;
 
 namespace ModbusWPF.ViewModel
 {
@@ -43,19 +44,28 @@ namespace ModbusWPF.ViewModel
                     case "bool":
                         BoolDataPoint boolDataPoint = new BoolDataPoint(name, dataType, portName, slaveAddress, registerAddress, readOnly, false);
                         ModbusHelper.ReadBoolData(boolDataPoint);
-                        boolDataPoint.PropertyChanged += DataPointPropertyChangedHandler;
+                        if (boolDataPoint.ReadOnly == false)
+                        {
+                            boolDataPoint.PropertyChanged += DataPointPropertyChangedHandler;
+                        }
                         DataPointsDictionary[name] = boolDataPoint;
                         break;
                     case "int16":
                         Int16DataPoint int16DataPoint = new Int16DataPoint(name, dataType, portName, slaveAddress, registerAddress, readOnly, 0);
                         ModbusHelper.ReadInt16Data(int16DataPoint);
-                        int16DataPoint.PropertyChanged += DataPointPropertyChangedHandler;
+                        if (int16DataPoint.ReadOnly == false)
+                        {
+                            int16DataPoint.PropertyChanged += DataPointPropertyChangedHandler;
+                        }
                         DataPointsDictionary[name] = int16DataPoint;
                         break;
                     case "float32":
                         Float32DataPoint float32DataPoint = new Float32DataPoint(name, dataType, portName, slaveAddress, registerAddress, readOnly, 0.1f);
                         ModbusHelper.ReadFloat32Data(float32DataPoint);
-                        float32DataPoint.PropertyChanged += DataPointPropertyChangedHandler;
+                        if (float32DataPoint.ReadOnly == false)
+                        {
+                            float32DataPoint.PropertyChanged += DataPointPropertyChangedHandler;
+                        }
                         DataPointsDictionary[name] = float32DataPoint;
                         break;
                     default:
@@ -64,63 +74,74 @@ namespace ModbusWPF.ViewModel
             }
         }
 
-        public void ProcessTaskQueue()
+        public async void ProcessTaskQueue()
         {
-            if (taskStack.Count == 0)
+            while (true)
             {
-                // 如果队列为空，添加所有读取任务
-                foreach (var dataName in DataPointsDictionary.Keys)
+                if (taskStack.Count == 0)
                 {
-                    taskStack.Push(("R", dataName));
-                }
-            }
-            else
-            {
-                // 从队列中取出任务
-                var (taskType, dataName) = taskStack.Pop();
-                var dataPoint = DataPointsDictionary[dataName];
-                if (taskType == "R")
-                {
-                    switch (dataPoint.DataType)
+                    // 如果队列为空，添加所有读取任务
+                    foreach (var dataName in DataPointsDictionary.Keys)
                     {
-                        case "bool":
-                            ModbusHelper.ReadBoolData((BoolDataPoint)dataPoint);
-                            break;
-                        case "int16":
-                            ModbusHelper.ReadInt16Data((Int16DataPoint)dataPoint);
-                            break;
-                        case "float32":
-                            ModbusHelper.ReadFloat32Data((Float32DataPoint)dataPoint);
-                            break;
+                           taskStack.Push(("R", dataName));
                     }
-                    OnPropertyChanged(dataName);
                 }
-                else if (taskType == "W")
+                else
                 {
-                    switch (dataPoint.DataType)
+                    // 从队列中取出任务
+                    var (taskType, dataName) = taskStack.Pop();
+                    var dataPoint = DataPointsDictionary[dataName];
+
+                    if (taskType == "R")
                     {
-                        case "bool":
-                            ModbusHelper.WriteBoolData((BoolDataPoint)dataPoint);
-                            break;
-                        case "int16":
-                            ModbusHelper.WriteInt16Data((Int16DataPoint)dataPoint);
-                            break;
-                        case "float32":
-                            ModbusHelper.WriteFloat32Data((Float32DataPoint)dataPoint);
-                            break;
+                        switch (dataPoint.DataType)
+                        {
+                            case "bool":
+                                var boolDataPoint = (BoolDataPoint)dataPoint;
+                                ModbusHelper.ReadBoolData(boolDataPoint);
+                                break;
+                            case "int16":
+                                var int16DataPoint = (Int16DataPoint)dataPoint;
+                                ModbusHelper.ReadInt16Data(int16DataPoint);
+                                break;
+                            case "float32":
+                                var float32DataPoint = (Float32DataPoint)dataPoint;
+                                ModbusHelper.ReadFloat32Data((Float32DataPoint)dataPoint);
+                                break;
+                        }
+
                     }
-                    // 写入完成后，立即添加一个读取任务以确认成功写入。
-                    // 如果写入失败，则仍显示原来的值
-                    taskStack.Push(("R", dataName));
+                    else if (taskType == "W")
+                    {
+                        switch (dataPoint.DataType)
+                        {
+                            case "bool":
+                                ModbusHelper.WriteBoolData((BoolDataPoint)dataPoint);
+                                break;
+                            case "int16":
+                                ModbusHelper.WriteInt16Data((Int16DataPoint)dataPoint);
+                                break;
+                            case "float32":
+                                ModbusHelper.WriteFloat32Data((Float32DataPoint)dataPoint);
+                                break;
+                        }
+                        // 写入完成后，立即添加一个读取任务以确认成功写入。
+                        // 如果写入失败，则仍显示原来的值
+                        taskStack.Push(("R", dataName));
+                    }
+                    await Task.Delay(100);
                 }
             }
         }
 
         private void DataPointPropertyChangedHandler(object sender, PropertyChangedEventArgs e)
         {
-            DataPointBase dataPoint = (DataPointBase)sender; 
+            DataPointBase dataPoint = (DataPointBase)sender;
             // 将写入任务加入栈顶
-            taskStack.Push(("W", dataPoint.Name));
+            if (!dataPoint.ReadOnly)
+            {
+                taskStack.Push(("W", dataPoint.Name));
+            }
         }
 
     }
