@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.IO.Ports;
 using NModbus;
 using NModbus.Serial;
@@ -14,40 +15,44 @@ namespace ModbusWPF.Helper
 {
     public class ModBusHelper
     {
-        private readonly Dictionary<string, SerialPort> _serialPortDictionary = new();
-        private readonly Dictionary<string, IModbusMaster> _modbusMasterDictionary = new();
+        private readonly Dictionary<string, SerialPort> SerialPortDictionary = new();
+        private readonly Dictionary<string, IModbusMaster> ModbusMasterDictionary = new();
 
-        public ModBusHelper()
+        public ModBusHelper(string portCSVPath)
         {
-            InitializeSerialPorts();
+            InitializeSerialPorts(portCSVPath);
         }
 
-        private void InitializeSerialPorts()
+        private void InitializeSerialPorts(string portCSVPath)
         {
-            var port8 = new SerialPort("COM3", 9600, Parity.None, 8, StopBits.One)
+            var lines = File.ReadAllLines(portCSVPath).Skip(1); // 跳过表头
+            foreach (var line in lines)
             {
-                ReadTimeout = 1000, // 读操作超时时间（毫秒）
-                WriteTimeout = 1000 // 写操作超时时间（毫秒）
-            }; 
+                var info = line.Split(',');
+                string portNamm= info[0];
+                int baudRate = int.Parse(info[1]);
+                int parity = int.Parse(info[4]);
+                int dataBits = int.Parse(info[2]);
+                int stopBits = int.Parse(info[3]);
 
-            _serialPortDictionary["COM3"] = port8;
+                var port = new SerialPort(portNamm, baudRate, (Parity)parity, dataBits, (StopBits)stopBits);
 
-            foreach (var port in _serialPortDictionary.Values)
-            {
+                SerialPortDictionary[portNamm] = port;
+
                 if (!port.IsOpen)
                 {
                     port.Open();
                 }
-            }
 
-            var factory = new ModbusFactory();
-            _modbusMasterDictionary["COM3"] = factory.CreateRtuMaster(new SerialPortAdapter(_serialPortDictionary["COM3"]));
+                var factory = new ModbusFactory();
+                ModbusMasterDictionary[portNamm] = factory.CreateRtuMaster(new SerialPortAdapter(port));
+            }
         }
 
         //向从机发送读取请求并自动更新DataPoint
         public void ReadBoolData(BoolDataPoint dataPoint)
         {
-            var master = _modbusMasterDictionary[dataPoint.PortName];
+            var master = ModbusMasterDictionary[dataPoint.PortName];
             byte slaveAddress = (byte)dataPoint.SlaveAddress;
             ushort registerAddress = (ushort)dataPoint.RegisterAddress;
 
@@ -58,7 +63,7 @@ namespace ModbusWPF.Helper
 
         public void WriteBoolData(BoolDataPoint dataPoint)
         {
-            var master = _modbusMasterDictionary[dataPoint.PortName];
+            var master = ModbusMasterDictionary[dataPoint.PortName];
             byte slaveAddress = (byte)dataPoint.SlaveAddress;
             ushort registerAddress = (ushort)dataPoint.RegisterAddress;
 
@@ -67,7 +72,7 @@ namespace ModbusWPF.Helper
 
         public void ReadInt16Data(Int16DataPoint dataPoint)
         {
-            var master = _modbusMasterDictionary[dataPoint.PortName];
+            var master = ModbusMasterDictionary[dataPoint.PortName];
             byte slaveAddress = (byte)dataPoint.SlaveAddress;
             ushort registerAddress = (ushort)dataPoint.RegisterAddress;
 
@@ -78,7 +83,7 @@ namespace ModbusWPF.Helper
 
         public void WriteInt16Data(Int16DataPoint dataPoint)
         {
-            var master = _modbusMasterDictionary[dataPoint.PortName];
+            var master = ModbusMasterDictionary[dataPoint.PortName];
             byte slaveAddress = (byte)dataPoint.SlaveAddress;
             ushort registerAddress = (ushort)dataPoint.RegisterAddress;
 
@@ -87,7 +92,7 @@ namespace ModbusWPF.Helper
 
         public void ReadFloat32Data(Float32DataPoint dataPoint)
         {
-            var master = _modbusMasterDictionary[dataPoint.PortName];
+            var master = ModbusMasterDictionary[dataPoint.PortName];
             byte slaveAddress = (byte)dataPoint.SlaveAddress;
             ushort registerAddress = (ushort)dataPoint.RegisterAddress;
 
@@ -99,7 +104,7 @@ namespace ModbusWPF.Helper
 
         public void WriteFloat32Data(Float32DataPoint dataPoint)
         {
-            var master = _modbusMasterDictionary[dataPoint.PortName];
+            var master = ModbusMasterDictionary[dataPoint.PortName];
             byte slaveAddress = (byte)dataPoint.SlaveAddress;
             ushort registerAddress = (ushort)dataPoint.RegisterAddress;
             var bytes = BitConverter.GetBytes(dataPoint.Value);
@@ -109,12 +114,12 @@ namespace ModbusWPF.Helper
 
         public void Close()
         {
-            foreach (var master in _modbusMasterDictionary.Values)
+            foreach (var master in ModbusMasterDictionary.Values)
             {
                 master.Dispose();
             }
 
-            foreach (var port in _serialPortDictionary.Values)
+            foreach (var port in SerialPortDictionary.Values)
             {
                 if (port.IsOpen)
                 {

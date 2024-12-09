@@ -16,19 +16,19 @@ namespace ModbusWPF.ViewModel
         public Dictionary<string, DataPointBase> DataPointsDictionary { get; set; }
         private Stack<(string taskType, string dataName)> taskStack;
 
-        public DataPointViewModel()
+        public DataPointViewModel(string dataCSVPath,string portCSVPath)
         {
             //DataPointsDictionary的key是数据点的名字，value是数据点对象
             DataPointsDictionary = new Dictionary<string, DataPointBase>();
-            ModbusHelper = new ModBusHelper();
+            ModbusHelper = new ModBusHelper(portCSVPath);
             //taskType使用"R","W"表示读写,dataName用于从DataPointsDictionary中获取数据点对象
             taskStack = new Stack<(string taskType, string dataName)>();
-            LoadDataPointsFromCsv("C:/codes/ModbusWPF/data_points.csv");
+            LoadDataPointsFromCsv(dataCSVPath);
         }
 
-        private void LoadDataPointsFromCsv(string filePath)
+        private void LoadDataPointsFromCsv(string dataCSVPath)
         {
-            var lines = File.ReadAllLines(filePath).Skip(1); // 跳过表头
+            var lines = File.ReadAllLines(dataCSVPath).Skip(1); // 跳过表头
             foreach (var line in lines)
             {
                 var info = line.Split(',');
@@ -74,7 +74,7 @@ namespace ModbusWPF.ViewModel
             }
         }
 
-        public async void ProcessTaskQueue()
+        public async void ProcessTaskQueue(int delayMilliseconds)
         {
             while (true)
             {
@@ -129,7 +129,7 @@ namespace ModbusWPF.ViewModel
                         // 如果写入失败，则仍显示原来的值
                         taskStack.Push(("R", dataName));
                     }
-                    await Task.Delay(100);
+                    await Task.Delay(delayMilliseconds);
                 }
             }
         }
