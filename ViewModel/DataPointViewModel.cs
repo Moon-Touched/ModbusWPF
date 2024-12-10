@@ -7,6 +7,7 @@ using ModbusWPF.Helper;
 using System.ComponentModel;
 using System.Diagnostics.Eventing.Reader;
 using System.Windows.Threading;
+using static ModbusWPF.Models.Float32DataPoint;
 
 namespace ModbusWPF.ViewModel
 {
@@ -107,6 +108,10 @@ namespace ModbusWPF.ViewModel
                             case "float32":
                                 var float32DataPoint = (Float32DataPoint)dataPoint;
                                 ModbusHelper.ReadFloat32Data((Float32DataPoint)dataPoint);
+                                break;
+                            case "int_float":
+                                var intFloatDataPoint = (IntFloatDataPoint)dataPoint; 
+                                ModbusHelper.ReadInt16Data(intFloatDataPoint);
                                 break;
                         }
 

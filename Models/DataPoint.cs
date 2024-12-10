@@ -104,5 +104,35 @@ namespace ModbusWPF.Models
             FromSlave = true;
             Value = initialValue;
         }
+
+        public class IntFloatDataPoint : DataPointBase, INotifyPropertyChanged
+        {
+            private float _value;
+            public float Value
+            {
+                get => _value * 10;
+                set
+                {
+                    float newValue = value / 10;
+                    if (!(_value == newValue))
+                    {
+                        _value = newValue;
+                        OnPropertyChanged(nameof(Value));
+                    }
+                }
+            }
+
+            public IntFloatDataPoint(string name, string dataType, string portName, int slaveAddress, int registerAddress, bool readOnly, float initialValue)
+            {
+                Name = name;
+                DataType = dataType;
+                PortName = portName;
+                SlaveAddress = slaveAddress;
+                RegisterAddress = registerAddress;
+                ReadOnly = readOnly;
+                FromSlave = true;
+                Value = initialValue;
+            }
+        }
     }
 }

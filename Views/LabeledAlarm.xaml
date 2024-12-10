@@ -8,23 +8,25 @@
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
     <Grid>
-        <TextBlock Text="{Binding LabelText, RelativeSource={RelativeSource AncestorType=UserControl}}" />
-        <ToggleButton IsChecked="{Binding State, RelativeSource={RelativeSource AncestorType=UserControl}}">
-            <ToggleButton.Content>
-                <materialDesign:PackIcon Width="36" Height="36" Kind="BellAlert" />
-            </ToggleButton.Content>
-            <ToggleButton.Style>
-                <Style TargetType="ToggleButton" BasedOn="{StaticResource MaterialDesignFlatToggleButton}">
-                    <Style.Triggers>
-                        <Trigger Property="IsChecked" Value="True">
-                            <Setter Property="Foreground" Value="Red" />
-                        </Trigger>
-                        <Trigger Property="IsChecked" Value="False">
-                            <Setter Property="Foreground" Value="Gray" />
-                        </Trigger>
-                    </Style.Triggers>
-                </Style>
-            </ToggleButton.Style>
-        </ToggleButton>
+        <StackPanel Orientation="Vertical">
+            <TextBlock Text="{Binding LabelText, RelativeSource={RelativeSource AncestorType=UserControl}}" />
+            <ToggleButton IsChecked="{Binding State, RelativeSource={RelativeSource AncestorType=UserControl}}">
+                <ToggleButton.Content>
+                    <materialDesign:PackIcon Width="36" Height="36" Kind="BellAlert" />
+                </ToggleButton.Content>
+                <ToggleButton.Style>
+                    <Style TargetType="ToggleButton" BasedOn="{StaticResource MaterialDesignFlatToggleButton}">
+                        <Style.Triggers>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter Property="Foreground" Value="Red" />
+                            </Trigger>
+                            <Trigger Property="IsChecked" Value="False">
+                                <Setter Property="Foreground" Value="Gray" />
+                            </Trigger>
+                        </Style.Triggers>
+                    </Style>
+                </ToggleButton.Style>
+            </ToggleButton>
+        </StackPanel>
     </Grid>
 </UserControl>
