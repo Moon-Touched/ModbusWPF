@@ -15,7 +15,7 @@
                                IsHitTestVisible="True"
                                State="{Binding DataPointsDictionary[Auto_Manual].Value, Mode=TwoWay}"/>
 
-        <local:LabeledAlarm x:Name="Alarm_1" LabelText="Alarm_1" HorizontalAlignment="Left" Margin="282,90,0,0" VerticalAlignment="Top"
+        <local:LabeledAlarm x:Name="Alarm_1" LabelText="Alarm_1" HorizontalAlignment="Left" Margin="353,101,0,0" VerticalAlignment="Top"
                                IsHitTestVisible="False"
                                State="{Binding DataPointsDictionary[Alarm_1].Value, Mode=TwoWay}"/>
 
@@ -27,7 +27,7 @@
                               IsHitTestVisible="True"
                               ValueText="{Binding DataPointsDictionary[SV].Value, Mode=TwoWay}"/>
 
-        <local:LabeledTextBox x:Name="Alarm_1_Value" LabelText="Alarm_1_Value" HorizontalAlignment="Left" Margin="154,105,0,0" VerticalAlignment="Top" Width="90"
+        <local:LabeledTextBox x:Name="Alarm_1_Value" LabelText="Alarm_1_Value" HorizontalAlignment="Left" Margin="154,105,0,0" VerticalAlignment="Top" Width="94"
                               IsHitTestVisible="True"
                               ValueText="{Binding DataPointsDictionary[Alarm_1_Value].Value, Mode=TwoWay}"/>
 

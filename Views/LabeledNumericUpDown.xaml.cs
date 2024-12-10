@@ -16,23 +16,23 @@ using System.Windows.Shapes;
 namespace ModbusWPF.Views
 {
     /// <summary>
-    /// LabeledTextBox.xaml 的交互逻辑
+    /// LabeledNumericUpDown.xaml 的交互逻辑
     /// </summary>
-    public partial class LabeledTextBox : UserControl
+    public partial class LabeledNumericUpDown : UserControl
     {
         public static readonly DependencyProperty LabelTextProperty =
             DependencyProperty.Register(
                 "LabelText", 
                 typeof(string), 
-                typeof(LabeledTextBox), 
-                new PropertyMetadata(string.Empty));
+                typeof(LabeledNumericUpDown), 
+                new PropertyMetadata(""));
 
         public static readonly DependencyProperty ValueTextProperty =
             DependencyProperty.Register(
                 "ValueText", 
                 typeof(string), 
-                typeof(LabeledTextBox), 
-                new PropertyMetadata(string.Empty));
+                typeof(LabeledNumericUpDown),
+                new PropertyMetadata(""));
 
         public string LabelText
         {
@@ -46,7 +46,7 @@ namespace ModbusWPF.Views
             set { SetValue(ValueTextProperty, value); }
         }
 
-        public LabeledTextBox()
+        public LabeledNumericUpDown()
         {
             InitializeComponent();
         }

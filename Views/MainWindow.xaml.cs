@@ -24,7 +24,7 @@ namespace ModbusWPF.Views
         public MainWindow()
         {
             InitializeComponent();
-            string basePath = "C:/codes/ModbusWPF";
+            string basePath = "C:/ModbusWPF data";
             string dataCSVPath = Path.Combine(basePath,  "data_points.csv");
             string portCSVPath = Path.Combine(basePath,  "port_info.csv");
             dataPointViewModel = new DataPointViewModel(dataCSVPath, portCSVPath);

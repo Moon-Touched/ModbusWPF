@@ -10,6 +10,8 @@ using NModbus.Device;
 using NModbus.Extensions.Enron;
 using System.Diagnostics;
 using System.Windows;
+using System.Globalization;
+using System.Windows.Controls;
 
 namespace ModbusWPF.Helper
 {
@@ -115,7 +117,7 @@ namespace ModbusWPF.Helper
             byte slaveAddress = (byte)dataPoint.SlaveAddress;
             ushort registerAddress = (ushort)dataPoint.RegisterAddress;
             var bytes = BitConverter.GetBytes(dataPoint.Value);
-            ushort[] data = { BitConverter.ToUInt16(bytes, 0), BitConverter.ToUInt16(bytes, 2) };
+            ushort[] data = { BitConverter.ToUInt16(bytes, 2), BitConverter.ToUInt16(bytes, 0) };
             //Debug.WriteLine(dataPoint.Name + " Write:" + data[0] +" "+ data[1]);
             master.WriteMultipleRegisters(slaveAddress, registerAddress, data);
         }
@@ -183,6 +185,25 @@ namespace ModbusWPF.Helper
                     port.Close();
                 }
             }
+        }
+    }
+
+    public class IntegerRangeValidationRule : ValidationRule
+    {
+        public int Min { get; set; }
+        public int Max { get; set; }
+
+        public override ValidationResult Validate(object value, CultureInfo cultureInfo)
+        {
+            if (int.TryParse((string)value, out int result))
+            {
+                if (result < Min || result > Max)
+                {
+                    return new ValidationResult(false, $"请输入一个介于 {Min} 和 {Max} 之间的整数。");
+                }
+                return ValidationResult.ValidResult;
+            }
+            return new ValidationResult(false, "请输入一个有效的整数。");
         }
     }
 }
