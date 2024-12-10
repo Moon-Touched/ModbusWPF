@@ -11,31 +11,23 @@
         Style="{StaticResource MaterialDesignWindow}">
 
     <Grid x:Name="MainGrid" MouseDown="MainGrid_MouseDown" Background="Transparent">
-        <local:LabeledToggleSwitch x:Name="COM_Write" LabelText="COM_Write" HorizontalAlignment="Left" Margin="32,10,0,0" VerticalAlignment="Top"
-                               IsHitTestVisible="False"
-                               State="{Binding DataPointsDictionary[COM_Write].Value, Mode=TwoWay}"/>
-
-        <local:LabeledToggleSwitch x:Name="Auto_Manual" LabelText="Auto_Manual" HorizontalAlignment="Left" Margin="150,10,0,0" VerticalAlignment="Top"
+        <local:LabeledToggleSwitch x:Name="Auto_Manual" LabelText="Auto_Manual" HorizontalAlignment="Left" Margin="32,10,0,0" VerticalAlignment="Top"
                                IsHitTestVisible="True"
                                State="{Binding DataPointsDictionary[Auto_Manual].Value, Mode=TwoWay}"/>
 
-        <local:LabeledAlarm x:Name="Alarm_1" LabelText="Alarm_1" HorizontalAlignment="Left" Margin="278,0,0,0" VerticalAlignment="Center"
+        <local:LabeledAlarm x:Name="Alarm_1" LabelText="Alarm_1" HorizontalAlignment="Left" Margin="282,90,0,0" VerticalAlignment="Top"
                                IsHitTestVisible="False"
                                State="{Binding DataPointsDictionary[Alarm_1].Value, Mode=TwoWay}"/>
 
-        <local:LabeledTextBox x:Name="PV" LabelText="PV" HorizontalAlignment="Left" Margin="32,166,0,0" VerticalAlignment="Top" Width="66"
+        <local:LabeledTextBox x:Name="PV" LabelText="PV" HorizontalAlignment="Left" Margin="36,66,0,0" VerticalAlignment="Top" Width="66"
                               IsHitTestVisible="False"
                               ValueText="{Binding DataPointsDictionary[PV].Value, Mode=TwoWay}"/>
 
-        <local:LabeledTextBox x:Name="SV" LabelText="SV" HorizontalAlignment="Left" Margin="32,217,0,0" VerticalAlignment="Top" Width="66"
+        <local:LabeledTextBox x:Name="SV" LabelText="SV" HorizontalAlignment="Left" Margin="36,117,0,0" VerticalAlignment="Top" Width="66"
                               IsHitTestVisible="True"
                               ValueText="{Binding DataPointsDictionary[SV].Value, Mode=TwoWay}"/>
 
-        <local:LabeledTextBox x:Name="Output_Power" LabelText="Output_Power" HorizontalAlignment="Left" Margin="32,266,0,0" VerticalAlignment="Top" Width="95"
-                              IsHitTestVisible="True"
-                              ValueText="{Binding DataPointsDictionary[Output_Power].Value, Mode=TwoWay}"/>
-
-        <local:LabeledTextBox x:Name="Alarm_1_Value" LabelText="Alarm_1_Value" HorizontalAlignment="Left" Margin="150,205,0,0" VerticalAlignment="Top" Width="90"
+        <local:LabeledTextBox x:Name="Alarm_1_Value" LabelText="Alarm_1_Value" HorizontalAlignment="Left" Margin="154,105,0,0" VerticalAlignment="Top" Width="90"
                               IsHitTestVisible="True"
                               ValueText="{Binding DataPointsDictionary[Alarm_1_Value].Value, Mode=TwoWay}"/>
 

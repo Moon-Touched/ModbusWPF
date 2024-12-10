@@ -2,7 +2,7 @@
 
 namespace ModbusWPF.Models
 {
-    public abstract class DataPointBase: INotifyPropertyChanged
+    public abstract class DataPointBase : INotifyPropertyChanged
     {
         public string Name { get; set; }
         public string PortName { get; set; }
@@ -10,7 +10,6 @@ namespace ModbusWPF.Models
         public int SlaveAddress { get; set; }
         public int RegisterAddress { get; set; }
         public bool ReadOnly { get; set; }
-        public bool FromSlave { get; set; }
 
         public event PropertyChangedEventHandler? PropertyChanged;
 
@@ -45,7 +44,6 @@ namespace ModbusWPF.Models
             SlaveAddress = slaveAddress;
             RegisterAddress = registerAddress;
             ReadOnly = readOnly;
-            FromSlave = true;
             Value = initialValue;
         }
     }
@@ -73,7 +71,6 @@ namespace ModbusWPF.Models
             SlaveAddress = slaveAddress;
             RegisterAddress = registerAddress;
             ReadOnly = readOnly;
-            FromSlave = true;
             Value = initialValue;
         }
     }
@@ -92,7 +89,6 @@ namespace ModbusWPF.Models
                 }
             }
         }
-
         public Float32DataPoint(string name, string dataType, string portName, int slaveAddress, int registerAddress, bool readOnly, float initialValue)
         {
             Name = name;
@@ -101,38 +97,62 @@ namespace ModbusWPF.Models
             SlaveAddress = slaveAddress;
             RegisterAddress = registerAddress;
             ReadOnly = readOnly;
-            FromSlave = true;
             Value = initialValue;
         }
+    }
 
-        public class IntFloatDataPoint : DataPointBase, INotifyPropertyChanged
+    public class FloatIntDataPoint : DataPointBase, INotifyPropertyChanged
+    {
+        private float _value;
+        public float Value
         {
-            private float _value;
-            public float Value
+            get => _value;
+            set
             {
-                get => _value * 10;
-                set
+                if (!(_value == value))
                 {
-                    float newValue = value / 10;
-                    if (!(_value == newValue))
-                    {
-                        _value = newValue;
-                        OnPropertyChanged(nameof(Value));
-                    }
+                    _value = value;
+                    OnPropertyChanged(nameof(Value));
                 }
             }
+        }
+        public FloatIntDataPoint(string name, string dataType, string portName, int slaveAddress, int registerAddress, bool readOnly, float initialValue)
+        {
+            Name = name;
+            DataType = dataType;
+            PortName = portName;
+            SlaveAddress = slaveAddress;
+            RegisterAddress = registerAddress;
+            ReadOnly = readOnly;
+            Value = initialValue;
+        }
+    }
 
-            public IntFloatDataPoint(string name, string dataType, string portName, int slaveAddress, int registerAddress, bool readOnly, float initialValue)
+    public class BoolIntDataPoint : DataPointBase, INotifyPropertyChanged
+    {
+        private bool _value;
+        public bool Value
+        {
+            get => _value;
+            set
             {
-                Name = name;
-                DataType = dataType;
-                PortName = portName;
-                SlaveAddress = slaveAddress;
-                RegisterAddress = registerAddress;
-                ReadOnly = readOnly;
-                FromSlave = true;
-                Value = initialValue;
+                if (!(_value == value))
+                {
+                    _value = value;
+                    OnPropertyChanged(nameof(Value));
+                }
             }
+        }
+
+        public BoolIntDataPoint(string name, string dataType, string portName, int slaveAddress, int registerAddress, bool readOnly, bool initialValue)
+        {
+            Name = name;
+            DataType = dataType;
+            PortName = portName;
+            SlaveAddress = slaveAddress;
+            RegisterAddress = registerAddress;
+            ReadOnly = readOnly;
+            Value = initialValue;
         }
     }
 }

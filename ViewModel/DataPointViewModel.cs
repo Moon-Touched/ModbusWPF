@@ -8,6 +8,7 @@ using System.ComponentModel;
 using System.Diagnostics.Eventing.Reader;
 using System.Windows.Threading;
 using static ModbusWPF.Models.Float32DataPoint;
+using System.Diagnostics;
 
 namespace ModbusWPF.ViewModel
 {
@@ -69,6 +70,24 @@ namespace ModbusWPF.ViewModel
                         }
                         DataPointsDictionary[name] = float32DataPoint;
                         break;
+                    case "float_int":
+                        FloatIntDataPoint floatIntDataPoint = new FloatIntDataPoint(name, dataType, portName, slaveAddress, registerAddress, readOnly, 0.1f);
+                        ModbusHelper.ReadFloatIntData(floatIntDataPoint);
+                        if (floatIntDataPoint.ReadOnly == false)
+                        {
+                            floatIntDataPoint.PropertyChanged += DataPointPropertyChangedHandler;
+                        }
+                        DataPointsDictionary[name] = floatIntDataPoint;
+                        break;
+                    case "bool_int":
+                        BoolIntDataPoint intBoolDataPoint = new BoolIntDataPoint(name, dataType, portName, slaveAddress, registerAddress, readOnly, false);
+                        ModbusHelper.ReadIntBoolData(intBoolDataPoint);
+                        if (intBoolDataPoint.ReadOnly == false)
+                        {
+                            intBoolDataPoint.PropertyChanged += DataPointPropertyChangedHandler;
+                        }
+                        DataPointsDictionary[name] = intBoolDataPoint;
+                        break;
                     default:
                         throw new InvalidOperationException($"Unsupported data type: {dataType}");
                 };
@@ -84,7 +103,10 @@ namespace ModbusWPF.ViewModel
                     // 如果队列为空，添加所有读取任务
                     foreach (var dataName in DataPointsDictionary.Keys)
                     {
-                           taskStack.Push(("R", dataName));
+                        if (DataPointsDictionary[dataName].ReadOnly)
+                        {
+                            taskStack.Push(("R", dataName));
+                        }
                     }
                 }
                 else
@@ -109,9 +131,13 @@ namespace ModbusWPF.ViewModel
                                 var float32DataPoint = (Float32DataPoint)dataPoint;
                                 ModbusHelper.ReadFloat32Data((Float32DataPoint)dataPoint);
                                 break;
-                            case "int_float":
-                                var intFloatDataPoint = (IntFloatDataPoint)dataPoint; 
-                                ModbusHelper.ReadInt16Data(intFloatDataPoint);
+                            case "float_int":
+                                var floatIntDataPoint = (FloatIntDataPoint)dataPoint;
+                                ModbusHelper.ReadFloatIntData((FloatIntDataPoint)dataPoint);
+                                break;
+                            case "bool_int":
+                                var intBoolDataPoint = (BoolIntDataPoint)dataPoint;
+                                ModbusHelper.ReadIntBoolData((BoolIntDataPoint)dataPoint);
                                 break;
                         }
 
@@ -129,9 +155,13 @@ namespace ModbusWPF.ViewModel
                             case "float32":
                                 ModbusHelper.WriteFloat32Data((Float32DataPoint)dataPoint);
                                 break;
+                            case "float_int":
+                                ModbusHelper.WriteFloatIntData((FloatIntDataPoint)dataPoint);
+                                break;
+                            case "int_bool":
+                                ModbusHelper.WriteIntBoolData((BoolIntDataPoint)dataPoint);
+                                break;
                         }
-                        // 写入完成后，立即添加一个读取任务以确认成功写入。
-                        // 如果写入失败，则仍显示原来的值
                         taskStack.Push(("R", dataName));
                     }
                     await Task.Delay(delayMilliseconds);
@@ -142,6 +172,8 @@ namespace ModbusWPF.ViewModel
         private void DataPointPropertyChangedHandler(object sender, PropertyChangedEventArgs e)
         {
             DataPointBase dataPoint = (DataPointBase)sender;
+            Debug.WriteLine($"PropertyChanged triggered for {dataPoint.Name}, Property: {e.PropertyName}");
+
             // 将写入任务加入栈顶
             if (!dataPoint.ReadOnly)
             {
