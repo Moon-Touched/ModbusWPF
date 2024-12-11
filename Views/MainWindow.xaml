@@ -15,27 +15,28 @@
                                IsHitTestVisible="True"
                                State="{Binding DataPointsDictionary[Auto_Manual].Value, Mode=TwoWay}"/>
 
-        <local:LabeledAlarm x:Name="Alarm_1" LabelText="Alarm_1" HorizontalAlignment="Left" Margin="353,101,0,0" VerticalAlignment="Top"
+        <local:LabeledAlarm x:Name="Alarm_1" LabelText="Alarm_1" HorizontalAlignment="Left" Margin="696,26,0,0" VerticalAlignment="Top"
                                IsHitTestVisible="False"
                                State="{Binding DataPointsDictionary[Alarm_1].Value, Mode=TwoWay}"/>
 
-        <local:LabeledTextBox x:Name="PV" LabelText="PV" HorizontalAlignment="Left" Margin="36,66,0,0" VerticalAlignment="Top" Width="66"
+        <local:LabeledTextBox x:Name="PV" LabelText="PV" HorizontalAlignment="Left" Margin="36,66,0,0" VerticalAlignment="Top" Width="90"
                               IsHitTestVisible="False"
                               ValueText="{Binding DataPointsDictionary[PV].Value, Mode=TwoWay}"/>
 
-        <local:LabeledNumericUpDown x:Name="SV_int" LabelText="SV_int" HorizontalAlignment="Left" Margin="32,183,0,0" VerticalAlignment="Top" Width="94"
+        <local:LabeledNumericUpDown x:Name="SV_int" LabelText="SV_int" HorizontalAlignment="Left" Margin="36,177,0,0" VerticalAlignment="Top" Width="90"
                               IsHitTestVisible="True"
                               ValueText="{Binding DataPointsDictionary[SV_int].Value, Mode=TwoWay}"
-                                    Maximum="10" Minimum="0"/>
+                              MinValue="-2147483648" MaxValue="2147483647"/>
 
-        <local:LabeledTextBox x:Name="SV" LabelText="SV" HorizontalAlignment="Left" Margin="36,117,0,0" VerticalAlignment="Top" Width="66"
+        <local:LabeledDecimalUpDown x:Name="SV" LabelText="SV" HorizontalAlignment="Left" Margin="36,117,0,0" VerticalAlignment="Top" Width="90"
                               IsHitTestVisible="True"
-                              ValueText="{Binding DataPointsDictionary[SV].Value, Mode=TwoWay}"/>
+                              ValueText="{Binding DataPointsDictionary[SV].Value, Mode=TwoWay}"
+                              MinValue="0" MaxValue="10"/>
 
-        <local:LabeledTextBox x:Name="Alarm_1_Value" LabelText="Alarm_1_Value" HorizontalAlignment="Left" Margin="154,105,0,0" VerticalAlignment="Top" Width="94"
+        <local:LabeledDecimalUpDown x:Name="Alarm_1_Value" LabelText="Alarm_1_Value" HorizontalAlignment="Left" Margin="577,33,0,0" VerticalAlignment="Top" Width="94"
                               IsHitTestVisible="True"
-                              ValueText="{Binding DataPointsDictionary[Alarm_1_Value].Value, Mode=TwoWay}"/>
-
+                              ValueText="{Binding DataPointsDictionary[Alarm_1_Value].Value, Mode=TwoWay}"
+                              MinValue="-2147483648" MaxValue="2147483647"/>
 
     </Grid>
 </Window>

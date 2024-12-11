@@ -1,5 +1,4 @@
-﻿using MaterialDesignThemes.Wpf;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -17,15 +16,20 @@ using System.Windows.Shapes;
 namespace ModbusWPF.Views
 {
     /// <summary>
-    /// LabeledNumericUpDown.xaml 的交互逻辑
+    /// LabeledDecimalUpDown.xaml 的交互逻辑
     /// </summary>
-    public partial class LabeledNumericUpDown : UserControl
+    public partial class LabeledDecimalUpDown : UserControl
     {
+        public LabeledDecimalUpDown()
+        {
+            InitializeComponent();
+        }
+
         public static readonly DependencyProperty LabelTextProperty =
             DependencyProperty.Register(
                 "LabelText",
                 typeof(string),
-                typeof(LabeledNumericUpDown),
+                typeof(LabeledDecimalUpDown),
                 new PropertyMetadata("")
                 );
 
@@ -33,11 +37,10 @@ namespace ModbusWPF.Views
             DependencyProperty.Register(
                 "ValueText",
                 typeof(string),
-                typeof(LabeledNumericUpDown),
+                typeof(LabeledDecimalUpDown),
                 new PropertyMetadata("")
                 );
-        public int MinValue { get; set; } = int.MinValue;
-        public int MaxValue { get; set; } = int.MaxValue;
+
 
         public string LabelText
         {
@@ -51,30 +54,29 @@ namespace ModbusWPF.Views
             set { SetValue(ValueTextProperty, value); }
         }
 
+        public float MinValue { get; set; } = float.MinValue;
+        public float MaxValue { get; set; } = float.MaxValue;
 
         private void Add_Btn_Clicked(object sender, RoutedEventArgs e)
         {
-            int value = int.Parse(ValueText);
-            value++;
+            float value = float.Parse(ValueText);
+            value += 0.1f;
             if (value <= MaxValue)
             {
-                ValueText = value.ToString();
+                //value = (float)Math.Round(value, 2);
+                ValueText = value.ToString("F2");
             }
         }
 
         private void Sub_Btn_Clicked(object sender, RoutedEventArgs e)
         {
-            int value = int.Parse(ValueText);
-            value--;
+            float value = float.Parse(ValueText);
+            value -= 0.1f;
             if (value >= MinValue)
-            { 
-                ValueText = value.ToString();
+            {
+                //value = (float)Math.Round(value, 2);
+                ValueText = value.ToString("F2");
             }
-        }
-
-        public LabeledNumericUpDown()
-        {
-            InitializeComponent();
         }
     }
 }
