@@ -34,7 +34,8 @@ namespace ModbusWPF.Views
             Loaded += (sender, args) =>
             {
                 // 使用Task.Run异步执行任务队列处理
-               Task.Run(() => dataPointViewModel.ProcessTaskQueue(200));
+                Task.Run(() => dataPointViewModel.ProcessTaskQueue(100));
+                Task.Run(() => dataPointViewModel.RecordData("C:/ModbusWPF data", 1000));
             };
         }
         

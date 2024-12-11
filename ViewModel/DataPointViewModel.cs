@@ -18,12 +18,10 @@ namespace ModbusWPF.ViewModel
         public Dictionary<string, DataPointBase> DataPointsDictionary { get; set; }
         private Stack<(string taskType, string dataName)> taskStack;
 
-        public DataPointViewModel(string dataCSVPath,string portCSVPath)
+        public DataPointViewModel(string dataCSVPath, string portCSVPath)
         {
-            //DataPointsDictionary的key是数据点的名字，value是数据点对象
             DataPointsDictionary = new Dictionary<string, DataPointBase>();
             ModbusHelper = new ModBusHelper(portCSVPath);
-            //taskType使用"R","W"表示读写,dataName用于从DataPointsDictionary中获取数据点对象
             taskStack = new Stack<(string taskType, string dataName)>();
             LoadDataPointsFromCsv(dataCSVPath);
         }
@@ -41,56 +39,22 @@ namespace ModbusWPF.ViewModel
                 int registerAddress = int.Parse(info[4]);
                 bool readOnly = info[5] == "Y";
 
-                switch (dataType)
+                DataPointBase dataPoint = dataType switch
                 {
-                    case "bool":
-                        BoolDataPoint boolDataPoint = new BoolDataPoint(name, dataType, portName, slaveAddress, registerAddress, readOnly, false);
-                        ModbusHelper.ReadBoolData(boolDataPoint);
-                        if (boolDataPoint.ReadOnly == false)
-                        {
-                            boolDataPoint.PropertyChanged += DataPointPropertyChangedHandler;
-                        }
-                        DataPointsDictionary[name] = boolDataPoint;
-                        break;
-                    case "int16":
-                        Int16DataPoint int16DataPoint = new Int16DataPoint(name, dataType, portName, slaveAddress, registerAddress, readOnly, 0);
-                        ModbusHelper.ReadInt16Data(int16DataPoint);
-                        if (int16DataPoint.ReadOnly == false)
-                        {
-                            int16DataPoint.PropertyChanged += DataPointPropertyChangedHandler;
-                        }
-                        DataPointsDictionary[name] = int16DataPoint;
-                        break;
-                    case "float32":
-                        Float32DataPoint float32DataPoint = new Float32DataPoint(name, dataType, portName, slaveAddress, registerAddress, readOnly, 0.1f);
-                        ModbusHelper.ReadFloat32Data(float32DataPoint);
-                        if (float32DataPoint.ReadOnly == false)
-                        {
-                            float32DataPoint.PropertyChanged += DataPointPropertyChangedHandler;
-                        }
-                        DataPointsDictionary[name] = float32DataPoint;
-                        break;
-                    case "float_int":
-                        FloatIntDataPoint floatIntDataPoint = new FloatIntDataPoint(name, dataType, portName, slaveAddress, registerAddress, readOnly, 0.1f);
-                        ModbusHelper.ReadFloatIntData(floatIntDataPoint);
-                        if (floatIntDataPoint.ReadOnly == false)
-                        {
-                            floatIntDataPoint.PropertyChanged += DataPointPropertyChangedHandler;
-                        }
-                        DataPointsDictionary[name] = floatIntDataPoint;
-                        break;
-                    case "bool_int":
-                        BoolIntDataPoint intBoolDataPoint = new BoolIntDataPoint(name, dataType, portName, slaveAddress, registerAddress, readOnly, false);
-                        ModbusHelper.ReadBoolIntData(intBoolDataPoint);
-                        if (intBoolDataPoint.ReadOnly == false)
-                        {
-                            intBoolDataPoint.PropertyChanged += DataPointPropertyChangedHandler;
-                        }
-                        DataPointsDictionary[name] = intBoolDataPoint;
-                        break;
-                    default:
-                        throw new InvalidOperationException($"Unsupported data type: {dataType}");
+                    "bool" => new BoolDataPoint(name, dataType, portName, slaveAddress, registerAddress, readOnly, false),
+                    "int16" => new Int16DataPoint(name, dataType, portName, slaveAddress, registerAddress, readOnly, 0),
+                    "float32" => new Float32DataPoint(name, dataType, portName, slaveAddress, registerAddress, readOnly, 0.1f),
+                    "float_int" => new FloatIntDataPoint(name, dataType, portName, slaveAddress, registerAddress, readOnly, 0.1f),
+                    "bool_int" => new BoolIntDataPoint(name, dataType, portName, slaveAddress, registerAddress, readOnly, false),
+                    _ => throw new InvalidOperationException($"Unsupported data type: {dataType}")
                 };
+
+                ModbusHelper.ReadData(dataPoint);
+                if (!dataPoint.ReadOnly)
+                {
+                    dataPoint.PropertyChanged += DataPointPropertyChangedHandler;
+                }
+                DataPointsDictionary[name] = dataPoint;
             }
         }
 
@@ -100,68 +64,23 @@ namespace ModbusWPF.ViewModel
             {
                 if (taskStack.Count == 0)
                 {
-                    // 如果队列为空，添加所有读取任务
                     foreach (var dataName in DataPointsDictionary.Keys)
                     {
-                        //if (DataPointsDictionary[dataName].ReadOnly)
-                        //{
-                            taskStack.Push(("R", dataName));
-                        //}
+                        taskStack.Push(("R", dataName));
                     }
                 }
                 else
                 {
-                    // 从队列中取出任务
                     var (taskType, dataName) = taskStack.Pop();
                     var dataPoint = DataPointsDictionary[dataName];
 
                     if (taskType == "R")
                     {
-                        switch (dataPoint.DataType)
-                        {
-                            case "bool":
-                                var boolDataPoint = (BoolDataPoint)dataPoint;
-                                ModbusHelper.ReadBoolData(boolDataPoint);
-                                break;
-                            case "int16":
-                                var int16DataPoint = (Int16DataPoint)dataPoint;
-                                ModbusHelper.ReadInt16Data(int16DataPoint);
-                                break;
-                            case "float32":
-                                var float32DataPoint = (Float32DataPoint)dataPoint;
-                                ModbusHelper.ReadFloat32Data((Float32DataPoint)dataPoint);
-                                break;
-                            case "float_int":
-                                var floatIntDataPoint = (FloatIntDataPoint)dataPoint;
-                                ModbusHelper.ReadFloatIntData((FloatIntDataPoint)dataPoint);
-                                break;
-                            case "bool_int":
-                                var intBoolDataPoint = (BoolIntDataPoint)dataPoint;
-                                ModbusHelper.ReadBoolIntData((BoolIntDataPoint)dataPoint);
-                                break;
-                        }
-
+                        ModbusHelper.ReadData(dataPoint);
                     }
                     else if (taskType == "W")
                     {
-                        switch (dataPoint.DataType)
-                        {
-                            case "bool":
-                                ModbusHelper.WriteBoolData((BoolDataPoint)dataPoint);
-                                break;
-                            case "int16":
-                                ModbusHelper.WriteInt16Data((Int16DataPoint)dataPoint);
-                                break;
-                            case "float32":
-                                ModbusHelper.WriteFloat32Data((Float32DataPoint)dataPoint);
-                                break;
-                            case "float_int":
-                                ModbusHelper.WriteFloatIntData((FloatIntDataPoint)dataPoint);
-                                break;
-                            case "bool_int":
-                                ModbusHelper.WriteBoolIntData((BoolIntDataPoint)dataPoint);
-                                break;
-                        }
+                        ModbusHelper.WriteData(dataPoint);
                         taskStack.Push(("R", dataName));
                     }
                     await Task.Delay(delayMilliseconds);
@@ -172,14 +91,36 @@ namespace ModbusWPF.ViewModel
         private void DataPointPropertyChangedHandler(object sender, PropertyChangedEventArgs e)
         {
             DataPointBase dataPoint = (DataPointBase)sender;
-            //Debug.WriteLine($"PropertyChanged triggered for {dataPoint.Name}, Property: {e.PropertyName}");
-
-            // 将写入任务加入栈顶
             if (!dataPoint.ReadOnly)
             {
                 taskStack.Push(("W", dataPoint.Name));
             }
         }
 
+        public async void RecordData(string dataFolderPath, int sampleTimeMillisecond)
+        {
+            string filePath = Path.Combine(dataFolderPath, $"DataRecord_{DateTime.Now:yyyyMMdd_HHmmss}.csv");
+            File.WriteAllText(filePath, $"date,time,{string.Join(",", DataPointsDictionary.Keys)}\n");
+            while (true)
+            {
+                var values = DataPointsDictionary.Values.Select(dp => dp switch
+                {
+                    BoolDataPoint boolDp => boolDp.Value.ToString(),
+                    Int16DataPoint int16Dp => int16Dp.Value.ToString(),
+                    Float32DataPoint float32Dp => float32Dp.Value.ToString(),
+                    FloatIntDataPoint floatIntDp => floatIntDp.Value.ToString(),
+                    BoolIntDataPoint boolIntDp => boolIntDp.Value.ToString(),
+                    _ => throw new InvalidOperationException($"Unsupported data type: {dp.DataType}")
+                });
+
+                using (var writer = new StreamWriter(filePath, true))
+                {
+                    var dateTime = DateTime.Now;
+                    writer.WriteLine($"{dateTime:yyyy-MM-dd},{dateTime:HH:mm:ss.fff},{string.Join(",", values)}");
+                }
+
+                await Task.Delay(sampleTimeMillisecond);
+            }
+        }
     }
 }
