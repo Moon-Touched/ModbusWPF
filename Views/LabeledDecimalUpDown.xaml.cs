@@ -57,7 +57,7 @@ namespace ModbusWPF.Views
         public float MinValue { get; set; } = float.MinValue;
         public float MaxValue { get; set; } = float.MaxValue;
 
-        private void Add_Btn_Clicked(object sender, RoutedEventArgs e)
+        private void AddBtnClicked(object sender, RoutedEventArgs e)
         {
             float value = float.Parse(ValueText);
             value += 0.1f;
@@ -68,7 +68,7 @@ namespace ModbusWPF.Views
             }
         }
 
-        private void Sub_Btn_Clicked(object sender, RoutedEventArgs e)
+        private void SubBtnClicked(object sender, RoutedEventArgs e)
         {
             float value = float.Parse(ValueText);
             value -= 0.1f;

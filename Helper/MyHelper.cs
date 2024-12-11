@@ -59,60 +59,82 @@ namespace ModbusWPF.Helper
 
         public void ReadData(DataPointBase dataPoint)
         {
-            var master = ModbusMasterDictionary[dataPoint.PortName];
-            byte slaveAddress = (byte)dataPoint.SlaveAddress;
-            ushort registerAddress = (ushort)dataPoint.RegisterAddress;
-
-            switch (dataPoint)
+            try
             {
-                case BoolDataPoint boolDataPoint:
-                    boolDataPoint.Value = master.ReadCoils(slaveAddress, registerAddress, 1)[0];
-                    break;
-                case Int16DataPoint int16DataPoint:
-                    int16DataPoint.Value = (short)master.ReadHoldingRegisters(slaveAddress, registerAddress, 1)[0];
-                    break;
-                case Float32DataPoint float32DataPoint:
-                    ushort[] registersFloat32 = master.ReadHoldingRegisters(slaveAddress, registerAddress, 2);
-                    float32DataPoint.Value = BitConverter.ToSingle(BitConverter.GetBytes(registersFloat32[0] << 16 | registersFloat32[1]), 0);
-                    break;
-                case FloatIntDataPoint floatIntDataPoint:
-                    floatIntDataPoint.Value = master.ReadHoldingRegisters(slaveAddress, registerAddress, 1)[0] / 10f;
-                    break;
-                case BoolIntDataPoint boolIntDataPoint:
-                    boolIntDataPoint.Value = master.ReadHoldingRegisters(slaveAddress, registerAddress, 1)[0] != 0;
-                    break;
-                default:
-                    throw new InvalidOperationException($"Unsupported data type: {dataPoint.DataType}");
+                var master = ModbusMasterDictionary[dataPoint.PortName];
+                byte slaveAddress = (byte)dataPoint.SlaveAddress;
+                ushort registerAddress = (ushort)dataPoint.RegisterAddress;
+
+                switch (dataPoint)
+                {
+                    case BoolDataPoint boolDataPoint:
+                        boolDataPoint.Value = master.ReadCoils(slaveAddress, registerAddress, 1)[0];
+                        break;
+                    case Int16DataPoint int16DataPoint:
+                        int16DataPoint.Value = (short)master.ReadHoldingRegisters(slaveAddress, registerAddress, 1)[0];
+                        break;
+                    case Float32DataPoint float32DataPoint:
+                        ushort[] registersFloat32 = master.ReadHoldingRegisters(slaveAddress, registerAddress, 2);
+                        float32DataPoint.Value = BitConverter.ToSingle(BitConverter.GetBytes(registersFloat32[0] << 16 | registersFloat32[1]), 0);
+                        break;
+                    case FloatIntDataPoint floatIntDataPoint:
+                        floatIntDataPoint.Value = master.ReadHoldingRegisters(slaveAddress, registerAddress, 1)[0] / 10f;
+                        break;
+                    case BoolIntDataPoint boolIntDataPoint:
+                        boolIntDataPoint.Value = master.ReadHoldingRegisters(slaveAddress, registerAddress, 1)[0] != 0;
+                        break;
+                    default:
+                        throw new InvalidOperationException($"Unsupported data type: {dataPoint.DataType}");
+                }
+            }
+            catch (TimeoutException ex)
+            {
+                MessageBox.Show($"读取数据超时: {ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"读取数据时发生错误: {ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
         public void WriteData(DataPointBase dataPoint)
         {
-            var master = ModbusMasterDictionary[dataPoint.PortName];
-            byte slaveAddress = (byte)dataPoint.SlaveAddress;
-            ushort registerAddress = (ushort)dataPoint.RegisterAddress;
-
-            switch (dataPoint)
+            try
             {
-                case BoolDataPoint boolDataPoint:
-                    master.WriteSingleCoil(slaveAddress, registerAddress, boolDataPoint.Value);
-                    break;
-                case Int16DataPoint int16DataPoint:
-                    master.WriteSingleRegister(slaveAddress, registerAddress, (ushort)int16DataPoint.Value);
-                    break;
-                case Float32DataPoint float32DataPoint:
-                    var bytes = BitConverter.GetBytes(float32DataPoint.Value);
-                    ushort[] data = { BitConverter.ToUInt16(bytes, 2), BitConverter.ToUInt16(bytes, 0) };
-                    master.WriteMultipleRegisters(slaveAddress, registerAddress, data);
-                    break;
-                case FloatIntDataPoint floatIntDataPoint:
-                    master.WriteSingleRegister(slaveAddress, registerAddress, (ushort)(floatIntDataPoint.Value * 10));
-                    break;
-                case BoolIntDataPoint boolIntDataPoint:
-                    master.WriteSingleRegister(slaveAddress, registerAddress, boolIntDataPoint.Value ? (ushort)1 : (ushort)0);
-                    break;
-                default:
-                    throw new InvalidOperationException($"Unsupported data type: {dataPoint.DataType}");
+                var master = ModbusMasterDictionary[dataPoint.PortName];
+                byte slaveAddress = (byte)dataPoint.SlaveAddress;
+                ushort registerAddress = (ushort)dataPoint.RegisterAddress;
+
+                switch (dataPoint)
+                {
+                    case BoolDataPoint boolDataPoint:
+                        master.WriteSingleCoil(slaveAddress, registerAddress, boolDataPoint.Value);
+                        break;
+                    case Int16DataPoint int16DataPoint:
+                        master.WriteSingleRegister(slaveAddress, registerAddress, (ushort)int16DataPoint.Value);
+                        break;
+                    case Float32DataPoint float32DataPoint:
+                        var bytes = BitConverter.GetBytes(float32DataPoint.Value);
+                        ushort[] data = { BitConverter.ToUInt16(bytes, 2), BitConverter.ToUInt16(bytes, 0) };
+                        master.WriteMultipleRegisters(slaveAddress, registerAddress, data);
+                        break;
+                    case FloatIntDataPoint floatIntDataPoint:
+                        master.WriteSingleRegister(slaveAddress, registerAddress, (ushort)(floatIntDataPoint.Value * 10));
+                        break;
+                    case BoolIntDataPoint boolIntDataPoint:
+                        master.WriteSingleRegister(slaveAddress, registerAddress, boolIntDataPoint.Value ? (ushort)1 : (ushort)0);
+                        break;
+                    default:
+                        throw new InvalidOperationException($"Unsupported data type: {dataPoint.DataType}");
+                }
+            }
+            catch (TimeoutException ex)
+            {
+                MessageBox.Show($"写入数据超时: {ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"写入数据时发生错误: {ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 

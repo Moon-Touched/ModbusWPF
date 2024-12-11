@@ -11,8 +11,8 @@
             <TextBlock Text="{Binding LabelText, RelativeSource={RelativeSource AncestorType=UserControl}}" />
             <StackPanel Orientation="Horizontal">
                 <TextBox Text="{Binding ValueText, RelativeSource={RelativeSource AncestorType=UserControl}}" MinWidth="50"/>
-                <Button Style="{StaticResource MaterialDesignIconButton}" Content="+" Width="20" Height="20" Click="Add_Btn_Clicked"/>
-                <Button Style="{StaticResource MaterialDesignIconButton}" Content="-" Width="20" Height="20" Click="Sub_Btn_Clicked"/>
+                <Button Style="{StaticResource MaterialDesignIconButton}" Content="+" Width="20" Height="20" Click="AddBtnClicked"/>
+                <Button Style="{StaticResource MaterialDesignIconButton}" Content="-" Width="20" Height="20" Click="SubBtnClicked"/>
             </StackPanel>
         </StackPanel>
     </Grid>

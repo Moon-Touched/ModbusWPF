@@ -52,7 +52,7 @@ namespace ModbusWPF.Views
         }
 
 
-        private void Add_Btn_Clicked(object sender, RoutedEventArgs e)
+        private void AddBtnClicked(object sender, RoutedEventArgs e)
         {
             int value = int.Parse(ValueText);
             value++;
@@ -62,7 +62,7 @@ namespace ModbusWPF.Views
             }
         }
 
-        private void Sub_Btn_Clicked(object sender, RoutedEventArgs e)
+        private void SubBtnClicked(object sender, RoutedEventArgs e)
         {
             int value = int.Parse(ValueText);
             value--;
