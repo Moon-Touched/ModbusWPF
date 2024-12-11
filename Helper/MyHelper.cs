@@ -130,7 +130,7 @@ namespace ModbusWPF.Helper
 
             ushort intValue = master.ReadHoldingRegisters(slaveAddress, registerAddress, 1)[0];
             dataPoint.Value = intValue / 10f;
-            Debug.WriteLine(dataPoint.Name + ":" + dataPoint.Value);
+            //Debug.WriteLine(dataPoint.Name + ":" + dataPoint.Value);
         }
 
         public void WriteFloatIntData(FloatIntDataPoint dataPoint)
@@ -143,18 +143,18 @@ namespace ModbusWPF.Helper
             master.WriteSingleRegister(slaveAddress, registerAddress, (ushort)(dataPoint.Value * 10));
         }
 
-        public void ReadIntBoolData(BoolIntDataPoint dataPoint)
+        public void ReadBoolIntData(BoolIntDataPoint dataPoint)
         {
             var master = ModbusMasterDictionary[dataPoint.PortName];
             byte slaveAddress = (byte)dataPoint.SlaveAddress;
             ushort registerAddress = (ushort)dataPoint.RegisterAddress;
 
             ushort intValue = master.ReadHoldingRegisters(slaveAddress, registerAddress, 1)[0];
-            dataPoint.Value = (intValue ==1);
+            dataPoint.Value = (intValue !=0);
             //Debug.WriteLine(dataPoint.Name + ":" + dataPoint.Value);
         }
 
-        public void WriteIntBoolData(BoolIntDataPoint dataPoint)
+        public void WriteBoolIntData(BoolIntDataPoint dataPoint)
         {
             var master = ModbusMasterDictionary[dataPoint.PortName];
             byte slaveAddress = (byte)dataPoint.SlaveAddress;
@@ -190,8 +190,8 @@ namespace ModbusWPF.Helper
 
     public class IntegerRangeValidationRule : ValidationRule
     {
-        public int Min { get; set; }
-        public int Max { get; set; }
+        public float Min { get; set; }
+        public float Max { get; set; }
 
         public override ValidationResult Validate(object value, CultureInfo cultureInfo)
         {

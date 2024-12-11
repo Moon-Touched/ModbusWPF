@@ -20,10 +20,6 @@ namespace ModbusWPF.Views
     /// </summary>
     public partial class LabeledToggleSwitch : UserControl
     {
-        public LabeledToggleSwitch()
-        {
-            InitializeComponent();
-        }
         public static readonly DependencyProperty LabelTextProperty =
             DependencyProperty.Register(
                 "LabelText",
@@ -48,6 +44,10 @@ namespace ModbusWPF.Views
         {
             get => (bool)GetValue(StateProperty);
             set => SetValue(StateProperty, value);
+        }
+        public LabeledToggleSwitch()
+        {
+            InitializeComponent();
         }
     }
 }

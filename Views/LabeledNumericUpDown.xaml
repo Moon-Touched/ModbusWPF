@@ -10,7 +10,7 @@
     <Grid>
         <StackPanel Orientation="Vertical">
             <TextBlock Text="{Binding LabelText, RelativeSource={RelativeSource AncestorType=UserControl}}" />
-            <materialDesign:NumericUpDown Value ="{Binding ValueText, RelativeSource={RelativeSource AncestorType=UserControl}}" />
+            <materialDesign:NumericUpDown x:Name="NumericUpDown" Value ="{Binding ValueText, RelativeSource={RelativeSource AncestorType=UserControl}}" />
         </StackPanel>
     </Grid>
 </UserControl>

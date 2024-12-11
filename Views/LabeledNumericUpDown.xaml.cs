@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MaterialDesignThemes.Wpf;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -25,14 +26,45 @@ namespace ModbusWPF.Views
                 "LabelText", 
                 typeof(string), 
                 typeof(LabeledNumericUpDown), 
-                new PropertyMetadata(""));
+                new PropertyMetadata("")
+                );
 
         public static readonly DependencyProperty ValueTextProperty =
             DependencyProperty.Register(
                 "ValueText", 
-                typeof(string), 
+                typeof(int), 
                 typeof(LabeledNumericUpDown),
-                new PropertyMetadata(""));
+                new PropertyMetadata(0)
+                );
+
+        public NumericUpDown NumericUpDownControl
+        {
+            get { return this.FindName("NumericUpDown") as NumericUpDown; }
+        }
+
+        public int Maximum
+        {
+            get { return NumericUpDownControl.Maximum; }
+            set
+            {
+                if (NumericUpDown != null)
+                {
+                    NumericUpDown.Maximum = value;
+                }
+            }
+        }
+
+        public int Minimum
+        {
+            get { return NumericUpDownControl.Minimum; }
+            set
+            {
+                if (NumericUpDown != null)
+                {
+                    NumericUpDown.Minimum = value;
+                }
+            }
+        }
 
         public string LabelText
         {
@@ -40,9 +72,9 @@ namespace ModbusWPF.Views
             set { SetValue(LabelTextProperty, value); }
         }
 
-        public string ValueText
+        public int ValueText
         {
-            get { return (string)GetValue(ValueTextProperty); }
+            get { return (int)GetValue(ValueTextProperty); }
             set { SetValue(ValueTextProperty, value); }
         }
 

@@ -1,6 +1,0 @@
-变量名,数据类型,串口名,从机地址,寄存器起始地址,是否只读
-Auto_Manual,bool_int,COM3,1,4308,N
-Alarm_1,bool_int,COM3,1,6148,Y
-PV,float_int,COM3,1,17415,Y
-SV,float_int,COM3,1,20344,N
-Alarm_1_Value,float_int,COM3,1,22529,N

@@ -36,14 +36,14 @@ namespace ModbusWPF.Views
 
         public string LabelText
         {
-            get { return (string)GetValue(LabelTextProperty); }
-            set { SetValue(LabelTextProperty, value); }
+            get => (string)GetValue(LabelTextProperty);
+            set => SetValue(LabelTextProperty, value);
         }
 
         public string ValueText
         {
-            get { return (string)GetValue(ValueTextProperty); }
-            set { SetValue(ValueTextProperty, value); }
+            get => (string)GetValue(ValueTextProperty);
+            set => SetValue(ValueTextProperty, value);
         }
 
         public LabeledTextBox()

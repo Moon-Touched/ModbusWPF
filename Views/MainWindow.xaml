@@ -23,6 +23,11 @@
                               IsHitTestVisible="False"
                               ValueText="{Binding DataPointsDictionary[PV].Value, Mode=TwoWay}"/>
 
+        <local:LabeledNumericUpDown x:Name="SV_int" LabelText="SV_int" HorizontalAlignment="Left" Margin="32,183,0,0" VerticalAlignment="Top" Width="94"
+                              IsHitTestVisible="True"
+                              ValueText="{Binding DataPointsDictionary[SV_int].Value, Mode=TwoWay}"
+                                    Maximum="10" Minimum="0"/>
+
         <local:LabeledTextBox x:Name="SV" LabelText="SV" HorizontalAlignment="Left" Margin="36,117,0,0" VerticalAlignment="Top" Width="66"
                               IsHitTestVisible="True"
                               ValueText="{Binding DataPointsDictionary[SV].Value, Mode=TwoWay}"/>

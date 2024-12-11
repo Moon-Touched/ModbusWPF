@@ -81,7 +81,7 @@ namespace ModbusWPF.ViewModel
                         break;
                     case "bool_int":
                         BoolIntDataPoint intBoolDataPoint = new BoolIntDataPoint(name, dataType, portName, slaveAddress, registerAddress, readOnly, false);
-                        ModbusHelper.ReadIntBoolData(intBoolDataPoint);
+                        ModbusHelper.ReadBoolIntData(intBoolDataPoint);
                         if (intBoolDataPoint.ReadOnly == false)
                         {
                             intBoolDataPoint.PropertyChanged += DataPointPropertyChangedHandler;
@@ -103,10 +103,10 @@ namespace ModbusWPF.ViewModel
                     // 如果队列为空，添加所有读取任务
                     foreach (var dataName in DataPointsDictionary.Keys)
                     {
-                        if (DataPointsDictionary[dataName].ReadOnly)
-                        {
+                        //if (DataPointsDictionary[dataName].ReadOnly)
+                        //{
                             taskStack.Push(("R", dataName));
-                        }
+                        //}
                     }
                 }
                 else
@@ -137,7 +137,7 @@ namespace ModbusWPF.ViewModel
                                 break;
                             case "bool_int":
                                 var intBoolDataPoint = (BoolIntDataPoint)dataPoint;
-                                ModbusHelper.ReadIntBoolData((BoolIntDataPoint)dataPoint);
+                                ModbusHelper.ReadBoolIntData((BoolIntDataPoint)dataPoint);
                                 break;
                         }
 
@@ -158,8 +158,8 @@ namespace ModbusWPF.ViewModel
                             case "float_int":
                                 ModbusHelper.WriteFloatIntData((FloatIntDataPoint)dataPoint);
                                 break;
-                            case "int_bool":
-                                ModbusHelper.WriteIntBoolData((BoolIntDataPoint)dataPoint);
+                            case "bool_int":
+                                ModbusHelper.WriteBoolIntData((BoolIntDataPoint)dataPoint);
                                 break;
                         }
                         taskStack.Push(("R", dataName));
@@ -172,7 +172,7 @@ namespace ModbusWPF.ViewModel
         private void DataPointPropertyChangedHandler(object sender, PropertyChangedEventArgs e)
         {
             DataPointBase dataPoint = (DataPointBase)sender;
-            Debug.WriteLine($"PropertyChanged triggered for {dataPoint.Name}, Property: {e.PropertyName}");
+            //Debug.WriteLine($"PropertyChanged triggered for {dataPoint.Name}, Property: {e.PropertyName}");
 
             // 将写入任务加入栈顶
             if (!dataPoint.ReadOnly)
