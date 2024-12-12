@@ -97,9 +97,8 @@ namespace ModbusWPF.ViewModel
             }
         }
 
-        public async void RecordData(string dataFolderPath, int sampleTimeMillisecond)
+        public async void RecordData(string filePath, int sampleTimeMillisecond)
         {
-            string filePath = Path.Combine(dataFolderPath, $"DataRecord_{DateTime.Now:yyyyMMdd_HHmmss}.csv");
             File.WriteAllText(filePath, $"date,time,{string.Join(",", DataPointsDictionary.Keys)}\n");
             while (true)
             {

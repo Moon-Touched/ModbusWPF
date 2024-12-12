@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
+using System.IO;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Documents;
@@ -19,9 +20,15 @@ namespace ModbusWPF.Views
     /// </summary>
     public partial class HisTrendWindow : Window
     {
-        public HisTrendWindow()
+        public HisTrendWindow(string hisCSVPath,List<string> dataPointNameList)
         {
             InitializeComponent();
+            var lines = File.ReadAllLines(hisCSVPath).Skip(1); // 跳过表头
+
+            foreach (var line in lines)
+            {
+                var data = line.Split(',');
+            }
         }
     }
 }

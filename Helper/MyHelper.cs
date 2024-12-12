@@ -9,6 +9,8 @@ using ModbusWPF.Models;
 using NModbus.Device;
 using System.Diagnostics;
 using System.Windows;
+using System.Globalization;
+using System.Windows.Controls;
 
 namespace ModbusWPF.Helper
 {
@@ -154,4 +156,5 @@ namespace ModbusWPF.Helper
             }
         }
     }
+
 }

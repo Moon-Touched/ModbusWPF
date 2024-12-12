@@ -5,9 +5,27 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:ModbusWPF.Views"
         xmlns:lvc="clr-namespace:LiveCharts.Wpf;assembly=LiveCharts.Wpf"
+        xmlns:myControl="clr-namespace:MyWPFControl;assembly=MyWPFControl" 
         mc:Ignorable="d"
-        Title="HisTrend" Height="450" Width="800">
+        Title="HisTrend" Height="540" Width="960">
     <Grid>
-        <lvc:CartesianChart />
+        <StackPanel Orientation="Horizontal" Margin="10">
+            <StackPanel Orientation="Vertical">
+                <Label Content="开始日期" VerticalAlignment="Center"/>
+                <DatePicker x:Name="StartDate" VerticalAlignment="Center"/>
+            </StackPanel>
+            <StackPanel Orientation="Vertical">
+                <Label Content="开始时间"/>
+                <StackPanel Orientation="Horizontal">
+                    <TextBox x:Name="StartHour" MinWidth="30"/>
+                    <TextBlock Text=":" VerticalAlignment="Center"/>
+                    <TextBox x:Name="StartMinute" MinWidth="30"/>
+                    <TextBlock Text=":" VerticalAlignment="Center"/>
+                    <TextBox x:Name="StartSecond" MinWidth="30"/>
+                </StackPanel>
+            </StackPanel>
+            <lvc:CartesianChart MinHeight="450" MinWidth="450"/>
+            <TextBlock Text="" Margin="10" MinWidth="100"/>
+        </StackPanel>
     </Grid>
 </Window>

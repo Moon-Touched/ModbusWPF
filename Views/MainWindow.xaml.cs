@@ -21,6 +21,7 @@ namespace ModbusWPF.Views
     public partial class MainWindow : Window
     {
         private DataPointViewModel dataPointViewModel;
+        public string HisCSVPath;
         public MainWindow()
         {
             InitializeComponent();
@@ -30,18 +31,19 @@ namespace ModbusWPF.Views
             dataPointViewModel = new DataPointViewModel(dataCSVPath, portCSVPath);
             DataContext = dataPointViewModel;
 
+            HisCSVPath = Path.Combine("C:/ModbusWPF data", $"DataRecord_{DateTime.Now:yyyyMMdd_HHmmss}.csv");
             // 在窗口加载完成后启动任务
             Loaded += (sender, args) =>
             {
                 // 使用Task.Run异步执行任务队列处理
                 Task.Run(() => dataPointViewModel.ProcessTaskQueue(100));
-                Task.Run(() => dataPointViewModel.RecordData("C:/ModbusWPF data", 1000));
+                Task.Run(() => dataPointViewModel.RecordData(HisCSVPath, 1000));
             };
         }
         
         private void HisBtnClicked(object sender, RoutedEventArgs e)
         {
-            var hisTrendWindow = new HisTrendWindow();
+            var hisTrendWindow = new HisTrendWindow(HisCSVPath,dataPointViewModel.DataPointsDictionary.Keys.ToList());
             hisTrendWindow.Show();
         }
        
