@@ -17,4 +17,10 @@
     <PackageReference Include="System.IO.Ports" Version="9.0.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Reference Include="MyWPFControl">
+      <HintPath>..\MyWPFControl\bin\Debug\net8.0-windows\MyWPFControl.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
 </Project>

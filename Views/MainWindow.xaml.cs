@@ -41,8 +41,10 @@ namespace ModbusWPF.Views
         
         private void HisBtnClicked(object sender, RoutedEventArgs e)
         {
-
+            var hisTrendWindow = new HisTrendWindow();
+            hisTrendWindow.Show();
         }
+       
 
         private void MainGrid_MouseDown(object sender, MouseButtonEventArgs e)
         {

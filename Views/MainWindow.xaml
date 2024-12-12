@@ -4,39 +4,35 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:ModbusWPF.Views"
-        xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes" 
+        xmlns:myControl="clr-namespace:MyWPFControl;assembly=MyWPFControl" 
         x:Class="ModbusWPF.Views.MainWindow"
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800"
         Style="{StaticResource MaterialDesignWindow}">
 
     <Grid x:Name="MainGrid" MouseDown="MainGrid_MouseDown" Background="Transparent">
-        <local:LabeledToggleSwitch x:Name="Auto_Manual" LabelText="Auto_Manual" HorizontalAlignment="Left" Margin="32,10,0,0" VerticalAlignment="Top"
+        <myControl:LabeledToggleSwitch x:Name="Auto_Manual" LabelText="Auto_Manual" HorizontalAlignment="Left" Margin="32,10,0,0" VerticalAlignment="Top"
                                IsHitTestVisible="True"
                                State="{Binding DataPointsDictionary[Auto_Manual].Value, Mode=TwoWay}"/>
 
-        <local:LabeledAlarm x:Name="Alarm_1" LabelText="Alarm_1" HorizontalAlignment="Left" Margin="155,238,0,0" VerticalAlignment="Top"
+        <myControl:LabeledAlarm x:Name="Alarm_1" LabelText="Alarm_1" HorizontalAlignment="Left" Margin="155,238,0,0" VerticalAlignment="Top"
                                IsHitTestVisible="False"
                                State="{Binding DataPointsDictionary[Alarm_1].Value, Mode=TwoWay}"/>
 
-        <local:LabeledTextBox x:Name="PV" LabelText="PV" HorizontalAlignment="Left" Margin="36,66,0,0" VerticalAlignment="Top" Width="90"
+        <myControl:LabeledTextBox x:Name="PV" LabelText="PV" HorizontalAlignment="Left" Margin="36,66,0,0" VerticalAlignment="Top" Width="90"
                               IsHitTestVisible="False"
                               ValueText="{Binding DataPointsDictionary[PV].Value, Mode=TwoWay}"/>
 
-        <local:LabeledNumericUpDown x:Name="SV_int" LabelText="SV_int" HorizontalAlignment="Left" Margin="36,177,0,0" VerticalAlignment="Top" Width="90"
-                              IsHitTestVisible="True"
-                              ValueText="{Binding DataPointsDictionary[SV_int].Value, Mode=TwoWay}"
-                              MinValue="-2147483648" MaxValue="2147483647"/>
-
-        <local:LabeledDecimalUpDown x:Name="SV" LabelText="SV" HorizontalAlignment="Left" Margin="36,117,0,0" VerticalAlignment="Top" Width="90"
+        <myControl:LabeledDecimalUpDown x:Name="SV" LabelText="SV" HorizontalAlignment="Left" Margin="36,117,0,0" VerticalAlignment="Top" Width="90"
                               IsHitTestVisible="True"
                               ValueText="{Binding DataPointsDictionary[SV].Value, Mode=TwoWay}"
                               MinValue="0" MaxValue="10"/>
 
-        <local:LabeledDecimalUpDown x:Name="Alarm_1_Value" LabelText="Alarm_1_Value" HorizontalAlignment="Left" Margin="36,245,0,0" VerticalAlignment="Top" Width="94"
+        <myControl:LabeledDecimalUpDown x:Name="Alarm_1_Value" LabelText="Alarm_1_Value" HorizontalAlignment="Left" Margin="36,245,0,0" VerticalAlignment="Top" Width="94"
                               IsHitTestVisible="True"
                               ValueText="{Binding DataPointsDictionary[Alarm_1_Value].Value, Mode=TwoWay}"
                               MinValue="-2147483648" MaxValue="2147483647"/>
+        
         <Button Content="历史趋势" Margin="568,86,0,0" Width="90" Click="HisBtnClicked"/>
     </Grid>
 </Window>
