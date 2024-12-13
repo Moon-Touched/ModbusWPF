@@ -4,35 +4,59 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:ModbusWPF.Views"
-        xmlns:myControl="clr-namespace:MyWPFControl;assembly=MyWPFControl" 
+        xmlns:mah="clr-namespace:MahApps.Metro.Controls;assembly=MahApps.Metro"
         x:Class="ModbusWPF.Views.MainWindow"
         mc:Ignorable="d"
         Title="MainWindow" Height="1080" Width="1920">
 
     <Grid x:Name="MainGrid" MouseDown="MainGrid_MouseDown" Background="Transparent">
-        <myControl:LabeledCheckBox x:Name="Auto_Manual" LabelText="Auto_Manual"  Margin="792,245,1028,780"
-                               IsHitTestVisible="True"
-                               State="{Binding DataPointsDictionary[Auto_Manual].Value, Mode=TwoWay}"/>
+        <mah:ToggleSwitch Header="手动" mah:HeaderedControlHelper.HeaderFontSize="{DynamicResource GlobalFontSize}"  FontSize="{DynamicResource GlobalFontSize}" 
+                          IsOn="{Binding DataPointsDictionary[Auto_Manual].Value, Mode=TwoWay}" Margin="82,86,0,0" VerticalAlignment="Top" Height="98" Width="195"/>
 
-        <myControl:LabeledCheckBox x:Name="Alarm_1" LabelText="Alarm_1"   
+        <mah:ToggleSwitch Header="Alarm_1" mah:HeaderedControlHelper.HeaderFontSize="{DynamicResource GlobalFontSize}"  FontSize="{DynamicResource GlobalFontSize}" 
+                  IsOn="{Binding DataPointsDictionary[Alarm_1].Value, Mode=TwoWay}" Margin="790,86,0,0" VerticalAlignment="Top" Height="98" Width="195"/>
+
+        <StackPanel Height="80" Width="200" Orientation="Vertical" Margin="82,189,1638,776">
+            <TextBlock Text="PV" FontSize="{DynamicResource GlobalFontSize}"  HorizontalAlignment="Left"/>
+            <mah:NumericUpDown Value="{Binding DataPointsDictionary[PV].Value, Mode=TwoWay}" HorizontalAlignment="Left" VerticalAlignment="Top" MinWidth="180"
                                IsHitTestVisible="False"
-                               State="{Binding DataPointsDictionary[Alarm_1].Value, Mode=TwoWay}" Margin="-43,162,43,-162"/>
+                               TextAlignment="Left"
+                               StringFormat="F2"
+                               FontSize="{DynamicResource GlobalFontSize}" />
+        </StackPanel>
 
-        <myControl:LabeledTextBox x:Name="PV" LabelText="PV" HorizontalAlignment="Left" Margin="73,63,0,0" VerticalAlignment="Top" Width="244"
-                              IsHitTestVisible="False"
-                              ValueText="{Binding DataPointsDictionary[PV].Value, Mode=TwoWay}" Height="103"/>
+        <StackPanel Height="80" Width="200" Orientation="Vertical" Margin="82,328,1638,637">
+            <TextBlock Text="SV" FontSize="{DynamicResource GlobalFontSize}"  HorizontalAlignment="Left"/>
+            <mah:NumericUpDown Value="{Binding DataPointsDictionary[SV].Value, Mode=TwoWay}" HorizontalAlignment="Left" VerticalAlignment="Top" MinWidth="180"
+                               TextAlignment="Left"
+                               StringFormat="F2"
+                               FontSize="{DynamicResource GlobalFontSize}"
+                               Minimum="0"
+                               Maximum="10"
+                               Interval="0.5"/>
+        </StackPanel>
 
-        <myControl:LabeledDecimalUpDown x:Name="SV" LabelText="SV" HorizontalAlignment="Left" Margin="73,166,0,0" VerticalAlignment="Top" Width="188"
-                              IsHitTestVisible="True"
-                              ValueText="{Binding DataPointsDictionary[SV].Value, Mode=TwoWay}"
-                              MinValue="0" MaxValue="10" Height="104"/>
+        <StackPanel Height="80" Width="200" Orientation="Vertical" Margin="82,456,1638,509">
+            <TextBlock Text="SV_int" FontSize="{DynamicResource GlobalFontSize}"  HorizontalAlignment="Left"/>
+            <mah:NumericUpDown Value="{Binding DataPointsDictionary[SV_int].Value, Mode=TwoWay}" HorizontalAlignment="Left" VerticalAlignment="Top" MinWidth="180"
+                       TextAlignment="Left"
+                       StringFormat="F0"
+                       FontSize="{DynamicResource GlobalFontSize}"
+                       Minimum="0"
+                       Maximum="10"
+                       Interval="1"/>
+        </StackPanel>
 
-        <myControl:LabeledDecimalUpDown x:Name="Alarm_1_Value" LabelText="Alarm_1_Value" HorizontalAlignment="Left" Margin="73,366,0,0" VerticalAlignment="Top" Width="622"
-                              IsHitTestVisible="True"
-                              ValueText="{Binding DataPointsDictionary[Alarm_1_Value].Value, Mode=TwoWay}"
-                              MinValue="-2147483648" MaxValue="2147483647" Height="258"/>
+        <StackPanel Height="80" Orientation="Vertical" Margin="530,84,1160,861">
+            <TextBlock Text="Alarm_1_Value" FontSize="{DynamicResource GlobalFontSize}"  HorizontalAlignment="Left"/>
+            <mah:NumericUpDown Value="{Binding DataPointsDictionary[Alarm_1_Value].Value, Mode=TwoWay}" HorizontalAlignment="Left" VerticalAlignment="Top" MinWidth="180"
+                       TextAlignment="Left"
+                       StringFormat="F2"
+                       FontSize="{DynamicResource GlobalFontSize}"
+                       Interval="0.5"/>
+        </StackPanel>
 
-        <Button Content="历史趋势" Margin="568,86,0,0" Width="90" Click="HisBtnClicked"/>
+        <Button Content="历史趋势" Margin="1665,594,160,418"  Click="HisBtnClicked"/>
     </Grid>
 </Window>
 

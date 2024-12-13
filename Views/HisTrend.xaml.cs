@@ -30,5 +30,10 @@ namespace ModbusWPF.Views
                 var data = line.Split(',');
             }
         }
+
+        public void HisBtnClicked(object sender, RoutedEventArgs e)
+        {
+            return;
+        }
     }
 }

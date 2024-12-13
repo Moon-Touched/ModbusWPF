@@ -53,5 +53,6 @@ namespace ModbusWPF.Views
             FocusManager.SetFocusedElement(this, null);
             Keyboard.ClearFocus();
         }
+
     }
 }

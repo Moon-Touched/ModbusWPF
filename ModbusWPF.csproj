@@ -11,16 +11,10 @@
 
   <ItemGroup>
     <PackageReference Include="LiveCharts.Wpf" Version="0.9.7" />
+    <PackageReference Include="MahApps.Metro" Version="2.4.10" />
     <PackageReference Include="NModbus" Version="3.0.81" />
     <PackageReference Include="NModbus.Serial" Version="3.0.81" />
     <PackageReference Include="System.IO.Ports" Version="9.0.0" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Reference Include="MyWPFControl">
-      <HintPath>..\MyWPFControl\bin\Debug\net8.0-windows\MyWPFControl.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
   </ItemGroup>
 
 </Project>
