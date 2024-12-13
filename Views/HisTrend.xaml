@@ -18,25 +18,36 @@
             <DatePicker x:Name="StartDate" VerticalAlignment="Center" FontSize="{DynamicResource GlobalFontSize}"/>
             <Label Content="开始时间" FontSize="{DynamicResource GlobalFontSize}"/>
             <StackPanel Orientation="Horizontal">
-                <TextBox x:Name="StartHour" MinWidth="60" FontSize="{DynamicResource GlobalFontSize}"/>
+                <TextBox x:Name="StartHour" MinWidth="50" FontSize="{DynamicResource GlobalFontSize}"/>
                 <TextBlock Text=":" VerticalAlignment="Center" FontSize="{DynamicResource GlobalFontSize}"/>
-                <TextBox x:Name="StartMinute" MinWidth="60" FontSize="{DynamicResource GlobalFontSize}"/>
+                <TextBox x:Name="StartMinute" MinWidth="50" FontSize="{DynamicResource GlobalFontSize}"/>
                 <TextBlock Text=":" VerticalAlignment="Center" FontSize="{DynamicResource GlobalFontSize}"/>
-                <TextBox x:Name="StartSecond" MinWidth="60" FontSize="{DynamicResource GlobalFontSize}"/>
+                <TextBox x:Name="StartSecond" MinWidth="50" FontSize="{DynamicResource GlobalFontSize}"/>
             </StackPanel>
             <Label Content="结束日期" VerticalAlignment="Center" FontSize="{DynamicResource GlobalFontSize}"/>
             <DatePicker x:Name="EndDate" VerticalAlignment="Center" FontSize="{DynamicResource GlobalFontSize}"/>
             <Label Content="结束时间" FontSize="{DynamicResource GlobalFontSize}"/>
             <StackPanel Orientation="Horizontal">
-                <TextBox x:Name="EndHour" MinWidth="60" FontSize="{DynamicResource GlobalFontSize}"/>
+                <TextBox x:Name="EndHour" MinWidth="50" FontSize="{DynamicResource GlobalFontSize}"/>
                 <TextBlock Text=":" VerticalAlignment="Center" FontSize="{DynamicResource GlobalFontSize}"/>
-                <TextBox x:Name="EndMinute" MinWidth="60" FontSize="{DynamicResource GlobalFontSize}"/>
+                <TextBox x:Name="EndMinute" MinWidth="50" FontSize="{DynamicResource GlobalFontSize}"/>
                 <TextBlock Text=":" VerticalAlignment="Center" FontSize="{DynamicResource GlobalFontSize}"/>
-                <TextBox x:Name="EndSecond" MinWidth="60" FontSize="{DynamicResource GlobalFontSize}"/>
+                <TextBox x:Name="EndSecond" MinWidth="50" FontSize="{DynamicResource GlobalFontSize}"/>
             </StackPanel>
-            <Button Content="查询" Click="HisBtnClicked" FontSize="{DynamicResource GlobalFontSize}"/>
+            <Button Content="查询" Click="QueryBtnClicked" FontSize="{DynamicResource GlobalFontSize}"/>
+            <ListView x:Name="DataSelecter">
+
+            </ListView>
+            <Button Content="刷新数据" Click="refreshBtnClicked" FontSize="{DynamicResource GlobalFontSize}"/>
         </StackPanel>
-        <lvc:CartesianChart Grid.Column="1"/>
+        <lvc:CartesianChart x:Name="cartesianChart" Grid.Column="1" Series="{Binding chartSeriesCollection}" LegendLocation="Right" FontSize="20">
+            <lvc:CartesianChart.AxisY>
+                <lvc:Axis LabelFormatter="{Binding YAxisFormatter}" FontSize="20"/>
+            </lvc:CartesianChart.AxisY>
+            <lvc:CartesianChart.AxisX>
+                <lvc:Axis FontSize="20"/>
+            </lvc:CartesianChart.AxisX>
+        </lvc:CartesianChart>
         <TextBlock Grid.Column="2" Text="" Margin="10" MinWidth="100"/>
     </Grid>
 </Window>
