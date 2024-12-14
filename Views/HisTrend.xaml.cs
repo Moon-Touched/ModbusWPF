@@ -1,23 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
 using System.IO;
+using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
+using LiveChartsCore;
+using LiveChartsCore.SkiaSharpView;
+using SkiaSharp;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Windows.Shapes;
-using LiveCharts;
-using LiveCharts.Wpf;
-using ModbusWPF.Models;
-using System.Globalization;
-using LiveCharts.Definitions.Charts;
-using System.Diagnostics;
+using LiveChartsCore.SkiaSharpView.Painting;
 
 namespace ModbusWPF.Views
 {
@@ -30,171 +23,161 @@ namespace ModbusWPF.Views
         private DateTime maxDateTime;
         private string filePath;
         private List<string> dataPointNames;
-        private Dictionary<string, List<string>> dataRecordDictionary;
-        private ListView dataSelecter;
-        public SeriesCollection chartSeriesCollection { get; set; }
-        public Func<double, string> YAxisFormatter { get; set; }
-        public Func<double, string> XAxisFormatter { get; set; }
+        private Dictionary<string, SKColor> lineColorsDictionary;
+        private List<SKColor> lineColors = new List<SKColor>
+        {SKColors.Blue, SKColors.Black, SKColors.Yellow, SKColors.Green, SKColors.Red, SKColors.Orange, SKColors.Cyan};
 
-        public HisTrendWindow(string hisCSVPath)
+        private Dictionary<string, List<string>> dataRecordDictionary;
+        private Dictionary<string, List<string>> fullDataRecordDictionary;
+        public ObservableCollection<ISeries> ChartSeries = new ObservableCollection<ISeries>();
+
+        public HisTrendWindow(string hisCSVPath, List<string> dataPointNames)
         {
             InitializeComponent();
-            YAxisFormatter = value => value.ToString("F2", CultureInfo.InvariantCulture);
-            XAxisFormatter = value => DateTime.FromOADate(value).ToString("yyyy-MM-dd HH:mm:ss");
+            this.filePath = hisCSVPath;
+            this.dataPointNames = dataPointNames;
 
-            filePath = hisCSVPath;
-            var lines = File.ReadAllLines(filePath);
-            dataPointNames = lines[0].Split(',').Skip(2).ToList();//跳过日期时间
-            dataSelecter = FindName("DataSelecter") as ListView;
+            InitializeData();
+            CreateCheckboxes();
+            UpdateDateTimeControl();
+            RefreshDataAndSeries();
+            cartesianChart.Series = ChartSeries;
+        }
+
+        private void InitializeData()
+        {
+            LoadFullDataRecordDictionary();
+            lineColorsDictionary = new Dictionary<string, SKColor>();
+            for (int i = 0; i < dataPointNames.Count; i++)
+            {
+                lineColorsDictionary[dataPointNames[i]] = lineColors[i % 7];
+            }
+        }
+
+        private void CreateCheckboxes()
+        {
             var fontSize = (double)FindResource("GlobalFontSize");
             foreach (var name in dataPointNames)
             {
-                var checkbox = new CheckBox();
-                checkbox.Name = name;
-                checkbox.FontSize = fontSize;
-                checkbox.Content = name;
-                checkbox.IsChecked = true;
-                checkbox.Checked += (s, e) => refreshChartSeriesCollection();
-                checkbox.Unchecked += (s, e) => refreshChartSeriesCollection();
-                dataSelecter.Items.Add(checkbox);
+                var checkbox = new CheckBox
+                {
+                    Name = name,
+                    FontSize = fontSize,
+                    Content = name,
+                    IsChecked = true
+                };
+                checkbox.Checked += CheckboxCheckedChanged;
+                checkbox.Unchecked += CheckboxCheckedChanged;
+                DataSelecter.Items.Add(checkbox);
             }
-
-            GetMinMaxDateTime(lines[2], lines.Last());
-            updateDateTimeControl();
-
-            chartSeriesCollection = new SeriesCollection();
-            refreshDataAndSeries();
-            DataContext = this;
         }
 
+        private void CheckboxCheckedChanged(object sender, RoutedEventArgs e)
+        {
+            RefreshChartSeriesCollection();
+        }
 
-        private void refreshDataAndSeries()
+        private void RefreshDataAndSeries()
         {
             dataRecordDictionary = new Dictionary<string, List<string>>();
-            var lines = File.ReadAllLines(filePath).Skip(1); // 跳过表头
+            var lines = File.ReadAllLines(filePath).Skip(1); // Skip header
+
             foreach (var line in lines)
             {
-                List<string> data = line.Split(',').ToList();
-                AddDataToDictionary("date", data[0]);
-                AddDataToDictionary("time", data[1]);
+                var data = line.Split(',').ToList();
+                DateTime dateTime = ParseDateTime(data[0], data[1].Split(".")[0]);
+
+                if (dateTime < minDateTime || dateTime > maxDateTime) continue;
+
+                AddData("date", data[0]);
+                AddData("time", data[1].Split(".")[0]);
 
                 for (int i = 0; i < dataPointNames.Count; i++)
                 {
                     string dataPointName = dataPointNames[i];
-                    AddDataToDictionary(dataPointName, data[i + 2]);//跳过日期时间
+                    AddData(dataPointName, data[i + 2]); // Skip date/time
                 }
             }
-            refreshChartSeriesCollection();
-            return;
+
+            RefreshChartSeriesCollection();
         }
 
-        private void refreshChartSeriesCollection()
+        private void AddData(string key, string value)
         {
-            cartesianChart.AxisX[0].LabelFormatter = value =>
+            if (!dataRecordDictionary.ContainsKey(key))
             {
-                return DateTime.FromOADate(value).ToString("yyyy-MM-dd HH:mm:ss");
+                dataRecordDictionary[key] = new List<string>();
+            }
+            dataRecordDictionary[key].Add(value);
+        }
+
+        private void RefreshChartSeriesCollection()
+        {
+            ChartSeries.Clear();
+            SetXAxisLabels();
+
+            foreach (CheckBox checkBox in DataSelecter.Items)
+            {
+                if (checkBox.IsChecked == true)
+                {
+                    AddChartSeries(checkBox.Content.ToString());
+                }
+            }
+        }
+
+        private void SetXAxisLabels()
+        {
+            cartesianChart.XAxes = new List<Axis>
+            {
+                new Axis { Labels = dataRecordDictionary["time"] },
+                new Axis { Labels = dataRecordDictionary["date"] }
             };
-            chartSeriesCollection.Clear();
-
-            var dateList = dataRecordDictionary["date"];
-            var timeList = dataRecordDictionary["time"];
-            List<DateTime> dateTimeData=new List<DateTime>();
-            for (int i = 0; i < dateList.Count; i++)
-            {
-                string dateString = dateList[i];
-                string timeString = timeList[i];
-                DateTime dateTime = ParseDateTime(dateString, timeString);
-                dateTimeData.Add(dateTime);
-            }
-            
-
-            var timeValues = new ChartValues<double>(dateTimeData.ConvertAll(x => x.ToOADate()));
-            foreach (var value in timeValues)
-            {
-                Debug.WriteLine($"OADate: {value}, DateTime: {DateTime.FromOADate(value)}");
-            }
-            //cartesianChart.AxisX[0].MinValue = minDateTime.ToOADate();
-            //cartesianChart.AxisX[0].MaxValue = maxDateTime.ToOADate();
-
-            foreach (var item in dataSelecter.Items)
-            {
-                var checkBox = item as CheckBox;
-                string dataPointName = checkBox.Content.ToString();
-                if (!checkBox.IsChecked.GetValueOrDefault())  // 如果未选中，跳过
-                {
-                    continue;
-                }
-
-                var lineSeries = new LineSeries
-                {
-                    Title = dataPointName,
-                    Values = new ChartValues<float>(),
-                    PointGeometry = null,
-                    Fill = Brushes.Transparent,
-                    LineSmoothness = 0
-                };
-
-                var dataList = dataRecordDictionary[dataPointName];
-                List<float> convertedValues = ConvertDataList(dataList);
-                lineSeries.Values = new ChartValues<float>(convertedValues);
-                chartSeriesCollection.Add(lineSeries);
-            }
-            cartesianChart.Update(true, true);
         }
 
-        private List<float> ConvertDataList(List<string> dataList)
+        private void AddChartSeries(string dataPointName)
         {
-            var convertedValues = new List<float>();
+            var dataList = dataRecordDictionary[dataPointName];
+            List<float> convertedValues = ConvertDataList(dataList);
 
-            foreach (var data in dataList)
+            var lineSeries = new LineSeries<float>
             {
-                float value = ConvertStringToFloat(data);
-                if (!float.IsNaN(value)) // 只添加有效的 float 值
-                {
-                    convertedValues.Add(value);
-                }
-            }
+                Name = dataPointName,
+                Values = convertedValues,
+                Fill = null,
+                GeometryFill = null,
+                GeometryStroke = null,
+                Stroke = new SolidColorPaint(lineColorsDictionary[dataPointName]) { StrokeThickness = 1 },
+                LineSmoothness = 0
+            };
 
-            return convertedValues;
+            ChartSeries.Add(lineSeries);
         }
 
-        private float ConvertStringToFloat(string data)
+        private List<float> ConvertDataList(List<string> dataStringList)
         {
-            if (float.TryParse(data, out float value))
-            {
-                return value;
-            }
-            else if (data.Equals("true", StringComparison.OrdinalIgnoreCase))
-            {
-                return 1f;
-            }
-            else if (data.Equals("false", StringComparison.OrdinalIgnoreCase))
-            {
-                return 0f;
-            }
-            else
-            {
-                return float.NaN; // 无效数据返回 NaN
-            }
+            return dataStringList
+                .Select(ConvertStringToFloat)
+                .Where(value => !float.IsNaN(value))
+                .ToList();
         }
 
-        private void GetMinMaxDateTime(string firstLine, string lastLine)
+        private float ConvertStringToFloat(string dataString)
         {
-            string[] firstData = firstLine.Split(',');
-            string firstDateString = firstData[0];
-            string firstTimeString = firstData[1];
+            if (float.TryParse(dataString, out float value)) return (float)Math.Round(value, 2);
+            return dataString.Equals("true", StringComparison.OrdinalIgnoreCase) ? 1f :
+                   dataString.Equals("false", StringComparison.OrdinalIgnoreCase) ? 0f : float.NaN;
+        }
+
+        private void UpdateDateTimeControl()
+        {
+            string firstDateString = fullDataRecordDictionary["date"][0];
+            string firstTimeString = fullDataRecordDictionary["time"][0];
             minDateTime = ParseDateTime(firstDateString, firstTimeString);
 
-            string[] lastData = lastLine.Split(',');
-            string lastDateString = lastData[0];
-            string lastTimeString = lastData[1];
-
+            string lastDateString = fullDataRecordDictionary["date"].Last();
+            string lastTimeString = fullDataRecordDictionary["time"].Last();
             maxDateTime = ParseDateTime(lastDateString, lastTimeString);
-            return;
-        }
 
-        private void updateDateTimeControl()
-        {
             StartDate.SelectedDate = minDateTime.Date;
             StartHour.Text = minDateTime.Hour.ToString("D2");
             StartMinute.Text = minDateTime.Minute.ToString("D2");
@@ -204,41 +187,111 @@ namespace ModbusWPF.Views
             EndHour.Text = maxDateTime.Hour.ToString("D2");
             EndMinute.Text = maxDateTime.Minute.ToString("D2");
             EndSecond.Text = maxDateTime.Second.ToString("D2");
-            return;
         }
 
         private DateTime ParseDateTime(string dateString, string timeString)
         {
-            // 解析日期和时间字符串，返回 DateTime 类型
-            string[] timeParts = timeString.Split(':');
-            string hour = timeParts[0];
-            string minute = timeParts[1];
-            string second = timeParts[2].Split('.')[0]; // 去除毫秒
+            var timeParts = timeString.Split(':');
+            string hour = timeParts[0], minute = timeParts[1], second = timeParts[2].Split('.')[0];
 
             DateTime date = DateTime.Parse(dateString);
             return new DateTime(date.Year, date.Month, date.Day, int.Parse(hour), int.Parse(minute), int.Parse(second));
         }
 
-        private void AddDataToDictionary(string key, string value)
+        private void LoadFullDataRecordDictionary()
         {
-            // 如果字典中没有这个键，则初始化一个新的 List<string>
-            if (!dataRecordDictionary.ContainsKey(key))
-            {
-                dataRecordDictionary[key] = new List<string>();
-            }
+            fullDataRecordDictionary = new Dictionary<string, List<string>>();
+            var lines = File.ReadAllLines(filePath);
 
-            // 向字典中添加数据
-            dataRecordDictionary[key].Add(value);
+            foreach (var line in lines.Skip(1))
+            {
+                var data = line.Split(',').ToList();
+                DateTime dateTime = ParseDateTime(data[0], data[1].Split(".")[0]);
+
+                AddDataToFullRecord("date", data[0]);
+                AddDataToFullRecord("time", data[1].Split(".")[0]);
+
+                for (int i = 0; i < dataPointNames.Count; i++)
+                {
+                    AddDataToFullRecord(dataPointNames[i], data[i + 2]);
+                }
+            }
+        }
+
+        private void AddDataToFullRecord(string key, string value)
+        {
+            if (!fullDataRecordDictionary.ContainsKey(key))
+            {
+                fullDataRecordDictionary[key] = new List<string>();
+            }
+            fullDataRecordDictionary[key].Add(value);
         }
 
         private void QueryBtnClicked(object sender, EventArgs e)
         {
-
+            if (ValidateAndParseDateTime())
+            {
+                RefreshDataAndSeries();
+            }
         }
 
-        private void refreshBtnClicked(object sender, RoutedEventArgs e)
+        private bool ValidateAndParseDateTime()
         {
-            refreshDataAndSeries();
+            string minDateString = StartDate.SelectedDate.ToString();
+            string minHourString = StartHour.Text;
+            string minMinuteString = StartMinute.Text;
+            string minSecondString = StartSecond.Text;
+
+            string maxDateString = EndDate.SelectedDate.ToString();
+            string maxHourString = EndHour.Text;
+            string maxMinuteString = EndMinute.Text;
+            string maxSecondString = EndSecond.Text;
+
+            if (!ValidateTime(minHourString, minMinuteString, minSecondString)) return false;
+            if (!ValidateTime(maxHourString, maxMinuteString, maxSecondString)) return false;
+
+            minDateTime = ParseDateTime(minDateString, $"{minHourString}:{minMinuteString}:{minSecondString}");
+            maxDateTime = ParseDateTime(maxDateString, $"{maxHourString}:{maxMinuteString}:{maxSecondString}");
+
+            if (minDateTime > maxDateTime)
+            {
+                MessageBox.Show("开始时间不能晚于结束时间", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+                return false;
+            }
+
+            return true;
+        }
+
+        private bool ValidateTime(string hourString, string minuteString, string secondString)
+        {
+            if (!int.TryParse(hourString, out int hour) || hour < 0 || hour > 23)
+            {
+                ShowTimeError("小时数应在 0 到 23 之间");
+                return false;
+            }
+            if (!int.TryParse(minuteString, out int minute) || minute < 0 || minute > 59)
+            {
+                ShowTimeError("分钟数应在 0 到 59 之间");
+                return false;
+            }
+            if (!int.TryParse(secondString, out int second) || second < 0 || second > 59)
+            {
+                ShowTimeError("秒数应在 0 到 59 之间");
+                return false;
+            }
+            return true;
+        }
+
+        private void ShowTimeError(string message)
+        {
+            MessageBox.Show(message, "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+
+        private void RefreshBtnClicked(object sender, RoutedEventArgs e)
+        {
+            LoadFullDataRecordDictionary();
+            UpdateDateTimeControl();
+            RefreshDataAndSeries();
         }
     }
 }

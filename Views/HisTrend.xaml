@@ -4,14 +4,14 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:ModbusWPF.Views"
-        xmlns:lvc="clr-namespace:LiveCharts.Wpf;assembly=LiveCharts.Wpf"
+        xmlns:lvc="clr-namespace:LiveChartsCore.SkiaSharpView.WPF;assembly=LiveChartsCore.SkiaSharpView.WPF"
         mc:Ignorable="d"
         Title="HisTrend" Height="1080" Width="1920">
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="1*"/>
+            <ColumnDefinition Width="0.2*"/>
             <ColumnDefinition Width="7*"/>
-            <ColumnDefinition Width="2*"/>
         </Grid.ColumnDefinitions>
         <StackPanel Grid.Column="0" Orientation="Vertical">
             <Label Content="开始日期" VerticalAlignment="Center" FontSize="{DynamicResource GlobalFontSize}"/>
@@ -38,16 +38,11 @@
             <ListView x:Name="DataSelecter">
 
             </ListView>
-            <Button Content="刷新数据" Click="refreshBtnClicked" FontSize="{DynamicResource GlobalFontSize}"/>
+            <Button Content="刷新数据" Click="RefreshBtnClicked" FontSize="{DynamicResource GlobalFontSize}"/>
+            <TextBlock x:Name="InfoBlock"/>
         </StackPanel>
-        <lvc:CartesianChart x:Name="cartesianChart" Grid.Column="1" Series="{Binding chartSeriesCollection}" LegendLocation="Right" FontSize="20">
-            <lvc:CartesianChart.AxisY>
-                <lvc:Axis LabelFormatter="{Binding YAxisFormatter}" FontSize="20"/>
-            </lvc:CartesianChart.AxisY>
-            <lvc:CartesianChart.AxisX>
-                <lvc:Axis FontSize="20"/>
-            </lvc:CartesianChart.AxisX>
-        </lvc:CartesianChart>
-        <TextBlock Grid.Column="2" Text="" Margin="10" MinWidth="100"/>
+        
+        <lvc:CartesianChart x:Name="cartesianChart" Grid.Column="2" FontSize="20" LegendPosition="Right" ZoomMode="X"/>
+        
     </Grid>
 </Window>
