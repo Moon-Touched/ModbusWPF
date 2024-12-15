@@ -16,8 +16,8 @@ namespace ModbusWPF.Helper
 {
     public class ModBusHelper
     {
-        private readonly Dictionary<string, SerialPort> SerialPortDictionary = new();
-        private readonly Dictionary<string, IModbusMaster> ModbusMasterDictionary = new();
+        public readonly Dictionary<string, SerialPort> SerialPortDictionary = new();
+        public readonly Dictionary<string, IModbusMaster> ModbusMasterDictionary = new();
 
         public ModBusHelper(string portCSVPath)
         {

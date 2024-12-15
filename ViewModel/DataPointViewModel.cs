@@ -19,8 +19,8 @@ namespace ModbusWPF.ViewModel
         public ModBusHelper ModbusHelper { get; set; }
         public Dictionary<string, DataPointBase> DataPointsDictionary { get; set; }
         public Dictionary<string, List<float>> DataRecordsDictionary { get; set; }
+        public Dictionary<string, Stack<(string taskType, DataPointBase dataPoint)>> TaskStackDictionary { get; set; }
         public List<DateTime> DateTimeList { get; set; }
-        private Stack<(string taskType, string dataName)> taskStack;
 
         public DataPointViewModel(string dataCSVPath, string portCSVPath)
         {
@@ -28,7 +28,7 @@ namespace ModbusWPF.ViewModel
             DataPointsDictionary = new Dictionary<string, DataPointBase>();
             DataRecordsDictionary = new Dictionary<string, List<float>>();
             DateTimeList = new List<DateTime>();
-            taskStack = new Stack<(string taskType, string dataName)>();
+            TaskStackDictionary = new Dictionary<string, Stack<(string taskType, DataPointBase dataPoint)>>();
             LoadDataPointsFromCsv(dataCSVPath);
         }
 
@@ -81,22 +81,33 @@ namespace ModbusWPF.ViewModel
             }
         }
 
-
-        public async void ProcessTaskQueue(int delayMilliseconds)
+        public void StartTasks(int delayMilliseconds)
         {
+            foreach (var portName in ModbusHelper.ModbusMasterDictionary.Keys)
+            {
+                TaskStackDictionary[portName] = new Stack<(string taskType, DataPointBase dataPoint)>();
+                ProcessTaskQueue(portName, delayMilliseconds);
+            }
+        }
+
+        public async void ProcessTaskQueue(string portName, int delayMilliseconds)
+        {
+            var taskStack=TaskStackDictionary[portName];
             while (true)
             {
                 if (taskStack.Count == 0)
                 {
-                    foreach (var dataName in DataPointsDictionary.Keys)
+                    foreach (var dataPoint in DataPointsDictionary.Values)
                     {
-                        taskStack.Push(("R", dataName));
+                        if (dataPoint.PortName == portName)
+                        {
+                            taskStack.Push(("R", dataPoint));
+                        }
                     }
                 }
                 else
                 {
-                    var (taskType, dataName) = taskStack.Pop();
-                    var dataPoint = DataPointsDictionary[dataName];
+                    var (taskType, dataPoint) = taskStack.Pop();
 
                     if (taskType == "R")
                     {
@@ -105,7 +116,7 @@ namespace ModbusWPF.ViewModel
                     else if (taskType == "W")
                     {
                         ModbusHelper.WriteData(dataPoint);
-                        taskStack.Push(("R", dataName));
+                        taskStack.Push(("R", dataPoint));
                     }
                     await Task.Delay(delayMilliseconds);
                 }
@@ -114,10 +125,10 @@ namespace ModbusWPF.ViewModel
 
         private void DataPointPropertyChangedHandler(object sender, PropertyChangedEventArgs e)
         {
-            DataPointBase dataPoint = (DataPointBase)sender;
+            var dataPoint = (DataPointBase)sender;
             if (!dataPoint.ReadOnly)
             {
-                taskStack.Push(("W", dataPoint.Name));
+                TaskStackDictionary[dataPoint.PortName].Push(("W", dataPoint));
             }
         }
 
