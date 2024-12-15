@@ -26,26 +26,22 @@ namespace ModbusWPF.Views
         {
             InitializeComponent();
             this.WindowState = WindowState.Maximized;
-            string basePath = "C:/ModbusWPF data";
+            const string basePath = "C:/ModbusWPF data";
             string dataCSVPath = Path.Combine(basePath,  "data_points.csv");
             string portCSVPath = Path.Combine(basePath,  "port_info.csv");
+            HisCSVPath = Path.Combine(basePath, $"DataRecord_{DateTime.Now:yyyyMMdd_HHmmss}.csv");
+
             dataPointViewModel = new DataPointViewModel(dataCSVPath, portCSVPath);
             DataContext = dataPointViewModel;
 
-            HisCSVPath = Path.Combine("C:/ModbusWPF data", $"DataRecord_{DateTime.Now:yyyyMMdd_HHmmss}.csv");
             // 在窗口加载完成后启动任务
-            Loaded += (sender, args) =>
-            {
-                // 使用Task.Run异步执行任务队列处理
-                Task.Run(() => dataPointViewModel.ProcessTaskQueue(100));
-                Task.Run(() => dataPointViewModel.RecordData(HisCSVPath, 1000));
-            };
+            Loaded += OnWindowLoaded;
         }
         
         private void HisBtnClicked(object sender, RoutedEventArgs e)
         {
             HisBtn.IsEnabled = false;
-            var hisTrendWindow = new HisTrendWindow(HisCSVPath,dataPointViewModel.DataPointsDictionary.Keys.ToList());
+            var hisTrendWindow = new HisTrendWindow(dataPointViewModel);
             hisTrendWindow.Show();
             hisTrendWindow.Closed += OnHisWindowClosed;
         }
@@ -54,7 +50,11 @@ namespace ModbusWPF.Views
         {
             HisBtn.IsEnabled = true;
         }
-
+        private void OnWindowLoaded(object sender, RoutedEventArgs args)
+        {
+            Task.Run(() => dataPointViewModel.ProcessTaskQueue(100));
+            Task.Run(() => dataPointViewModel.RecordData(HisCSVPath, 1000));
+        }
 
         private void MainGrid_MouseDown(object sender, MouseButtonEventArgs e)
         {
