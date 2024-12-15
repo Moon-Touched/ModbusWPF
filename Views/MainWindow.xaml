@@ -45,8 +45,6 @@
                        TextAlignment="Left"
                        StringFormat="F0"
                        FontSize="{DynamicResource GlobalFontSize}"
-                       Minimum="0"
-                       Maximum="10"
                        Interval="1"/>
         </StackPanel>
 
@@ -59,7 +57,7 @@
                        Interval="0.5"/>
         </StackPanel>
 
-        <Button Content="历史趋势" Margin="575,338,1250,674"  Click="HisBtnClicked"/>
+        <Button x:Name="HisBtn" Content="历史趋势" Margin="575,338,1250,674"  Click="HisBtnClicked"/>
     </Grid>
 </Window>
 

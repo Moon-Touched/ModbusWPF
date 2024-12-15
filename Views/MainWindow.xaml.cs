@@ -25,6 +25,7 @@ namespace ModbusWPF.Views
         public MainWindow()
         {
             InitializeComponent();
+            this.WindowState = WindowState.Maximized;
             string basePath = "C:/ModbusWPF data";
             string dataCSVPath = Path.Combine(basePath,  "data_points.csv");
             string portCSVPath = Path.Combine(basePath,  "port_info.csv");
@@ -43,10 +44,17 @@ namespace ModbusWPF.Views
         
         private void HisBtnClicked(object sender, RoutedEventArgs e)
         {
+            HisBtn.IsEnabled = false;
             var hisTrendWindow = new HisTrendWindow(HisCSVPath,dataPointViewModel.DataPointsDictionary.Keys.ToList());
             hisTrendWindow.Show();
+            hisTrendWindow.Closed += OnHisWindowClosed;
         }
-       
+
+        private void OnHisWindowClosed(object sender, EventArgs e)
+        {
+            HisBtn.IsEnabled = true;
+        }
+
 
         private void MainGrid_MouseDown(object sender, MouseButtonEventArgs e)
         {

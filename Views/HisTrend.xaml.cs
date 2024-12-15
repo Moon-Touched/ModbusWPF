@@ -34,6 +34,8 @@ namespace ModbusWPF.Views
         public HisTrendWindow(string hisCSVPath, List<string> dataPointNames)
         {
             InitializeComponent();
+            this.WindowState = WindowState.Maximized;
+
             this.filePath = hisCSVPath;
             this.dataPointNames = dataPointNames;
 
