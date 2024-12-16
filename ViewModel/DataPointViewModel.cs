@@ -19,8 +19,12 @@ namespace ModbusWPF.ViewModel
         public ModBusHelper ModbusHelper { get; set; }
         public Dictionary<string, DataPointBase> DataPointsDictionary { get; set; }
         public Dictionary<string, List<float>> DataRecordsDictionary { get; set; }
-        public Dictionary<string, Stack<(string taskType, DataPointBase dataPoint)>> TaskStackDictionary { get; set; }
+        public List<string> DateStringList { get; set; }
+        public List<string> TimeStringList { get; set; }
         public List<DateTime> DateTimeList { get; set; }
+        public Dictionary<string, Stack<(string taskType, DataPointBase dataPoint)>> TaskStackDictionary { get; set; }
+
+        public readonly object RecordLock = new object();
 
         public DataPointViewModel(string dataCSVPath, string portCSVPath)
         {
@@ -28,6 +32,8 @@ namespace ModbusWPF.ViewModel
             DataPointsDictionary = new Dictionary<string, DataPointBase>();
             DataRecordsDictionary = new Dictionary<string, List<float>>();
             DateTimeList = new List<DateTime>();
+            DateStringList= new List<string>();
+            TimeStringList = new List<string>();
             TaskStackDictionary = new Dictionary<string, Stack<(string taskType, DataPointBase dataPoint)>>();
             LoadDataPointsFromCsv(dataCSVPath);
         }
@@ -138,52 +144,58 @@ namespace ModbusWPF.ViewModel
             while (true)
             {
                 List<string> values = new List<string>();
-                foreach (var dataPoint in DataPointsDictionary.Values)
+                lock (RecordLock)
                 {
-                    switch (dataPoint)
+                    foreach (var dataPoint in DataPointsDictionary.Values)
                     {
-                        case BoolDataPoint boolDataPoint:
-                            values.Add(boolDataPoint.Value.ToString());
-                            if (boolDataPoint.Value)
-                            {
-                                DataRecordsDictionary[boolDataPoint.Name].Add(1f);
-                            }
-                            else
-                            {
-                                DataRecordsDictionary[boolDataPoint.Name].Add(0f);
-                            }
-                            break;
-                        case Int16DataPoint int16DataPoint:
-                            values.Add(int16DataPoint.Value.ToString());
-                            DataRecordsDictionary[int16DataPoint.Name].Add(int16DataPoint.Value);                            
-                            break;
-                        case Float32DataPoint float32DataPoint:
-                            values.Add(float32DataPoint.Value.ToString());
-                            DataRecordsDictionary[float32DataPoint.Name].Add(float32DataPoint.Value);
-                            break;
-                        case FloatIntDataPoint floatIntDataPoint:
-                            values.Add(floatIntDataPoint.Value.ToString());
-                            DataRecordsDictionary[floatIntDataPoint.Name].Add(floatIntDataPoint.Value);
-                            break;
-                        case BoolIntDataPoint boolIntDataPoint:
-                            values.Add(boolIntDataPoint.Value.ToString());
-                            if (boolIntDataPoint.Value)
-                            {
-                                DataRecordsDictionary[boolIntDataPoint.Name].Add(1f);
-                            }
-                            else
-                            {
-                                DataRecordsDictionary[boolIntDataPoint.Name].Add(0f);
-                            }
-                            break;
+                        switch (dataPoint)
+                        {
+                            case BoolDataPoint boolDataPoint:
+                                values.Add(boolDataPoint.Value.ToString());
+                                if (boolDataPoint.Value)
+                                {
+                                    DataRecordsDictionary[boolDataPoint.Name].Add(1f);
+                                }
+                                else
+                                {
+                                    DataRecordsDictionary[boolDataPoint.Name].Add(0f);
+                                }
+                                break;
+                            case Int16DataPoint int16DataPoint:
+                                values.Add(int16DataPoint.Value.ToString());
+                                DataRecordsDictionary[int16DataPoint.Name].Add(int16DataPoint.Value);
+                                break;
+                            case Float32DataPoint float32DataPoint:
+                                values.Add(float32DataPoint.Value.ToString());
+                                DataRecordsDictionary[float32DataPoint.Name].Add(float32DataPoint.Value);
+                                break;
+                            case FloatIntDataPoint floatIntDataPoint:
+                                values.Add(floatIntDataPoint.Value.ToString());
+                                DataRecordsDictionary[floatIntDataPoint.Name].Add(floatIntDataPoint.Value);
+                                break;
+                            case BoolIntDataPoint boolIntDataPoint:
+                                values.Add(boolIntDataPoint.Value.ToString());
+                                if (boolIntDataPoint.Value)
+                                {
+                                    DataRecordsDictionary[boolIntDataPoint.Name].Add(1f);
+                                }
+                                else
+                                {
+                                    DataRecordsDictionary[boolIntDataPoint.Name].Add(0f);
+                                }
+                                break;
+                        }
                     }
-                }
 
-                var dateTime = DateTime.Now;
-                DateTimeList.Add(dateTime);
-                using (var writer = new StreamWriter(filePath, true))
-                {
-                    writer.WriteLine($"{dateTime:yyyy-MM-dd},{dateTime:HH:mm:ss.fff},{string.Join(",", values)}");
+                    var dateTime = DateTime.Now;
+                    DateStringList.Add(dateTime.ToString("yyyy-MM-dd"));
+                    TimeStringList.Add(dateTime.ToString("HH:mm:ss.fff"));
+                    DateTimeList.Add(dateTime);
+
+                    using (var writer = new StreamWriter(filePath, true))
+                    {
+                        writer.WriteLine($"{dateTime:yyyy-MM-dd},{dateTime:HH:mm:ss.fff},{string.Join(",", values)}");
+                    }
                 }
 
                 await Task.Delay(sampleTimeMillisecond);

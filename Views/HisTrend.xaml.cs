@@ -12,6 +12,8 @@ using System.ComponentModel;
 using System.Windows.Shapes;
 using LiveChartsCore.SkiaSharpView.Painting;
 using ModbusWPF.ViewModel;
+using ModbusWPF.Models;
+using System.Diagnostics;
 
 namespace ModbusWPF.Views
 {
@@ -25,11 +27,17 @@ namespace ModbusWPF.Views
         private Dictionary<string, SKColor> lineColorsDictionary;
         private List<SKColor> lineColors = new List<SKColor>
         {SKColors.Blue, SKColors.Black, SKColors.Yellow, SKColors.Green, SKColors.Red, SKColors.Orange, SKColors.Cyan};
+        private List<string> dateLabels;
+        private List<string> timeLabels;
 
         private readonly DataPointViewModel dataPointViewModel;
-        public Dictionary<string, List<float>> slicedRecordDictionary;
-        private List<string> dateLabels = new List<string> ();
-        private List<string> timeLabels = new List<string>();
+        private Dictionary<string, List<float>> slicedRecordDictionary;
+        private List<DateTime> dateTimeCopy;
+        private List<string> dateStringCopy;
+        private List<string> timeStringCopy;
+        private Dictionary<string, List<float>> dataRecordsCopy;
+        public readonly object RecordLock;
+
         public ObservableCollection<ISeries> ChartSeries = new ObservableCollection<ISeries>();
 
         public HisTrendWindow(DataPointViewModel dataPointViewModel)
@@ -37,14 +45,20 @@ namespace ModbusWPF.Views
             InitializeComponent();
             this.WindowState = WindowState.Maximized;
             this.dataPointViewModel = dataPointViewModel;
-            slicedRecordDictionary=new Dictionary<string, List<float>>();
+            slicedRecordDictionary = new Dictionary<string, List<float>>();
+            dateLabels = new List<string>();
+            timeLabels = new List<string>();
+            dateTimeCopy = new List<DateTime>();
+            dateStringCopy = new List<string>();
+            timeStringCopy = new List<string>();
+            dataRecordsCopy = new Dictionary<string, List<float>>();
+            RecordLock = dataPointViewModel.RecordLock;
 
             InitializeData();
             CreateCheckboxes();
-            UpdateDateTimeControl();
             LoadAllData();
+            UpdateDateTimeControl();
             RefreshChartSeries();
-            cartesianChart.Series = ChartSeries;
         }
         /// <summary>
         /// 初始化数据, 为每个数据点创建一个空的列表，初始化线的颜色
@@ -70,18 +84,19 @@ namespace ModbusWPF.Views
         /// </summary>
         private void LoadAllData()
         {
-            slicedRecordDictionary.Clear();
-            foreach (var key in dataPointViewModel.DataRecordsDictionary.Keys)
+            lock (RecordLock)
             {
-                slicedRecordDictionary[key] = new List<float>(dataPointViewModel.DataRecordsDictionary[key]);
+                slicedRecordDictionary = new Dictionary<string, List<float>>( dataPointViewModel.DataRecordsDictionary);
+                dateTimeCopy = new List<DateTime>(dataPointViewModel.DateTimeList);
+                dateLabels = new List<string>(dataPointViewModel.DateStringList);
+                timeLabels = new List<string>(dataPointViewModel.TimeStringList);
             }
-            dateLabels.Clear();
-            timeLabels.Clear();
-            foreach (var date in dataPointViewModel.DateTimeList)
-            {
-                dateLabels.Add(date.ToString("yyyy-MM-dd"));
-                timeLabels.Add(date.ToString("HH:mm:ss"));
-            }
+            Debug.WriteLine($"dataPointViewModel.DataRecordsDictionary:{dataPointViewModel.DataRecordsDictionary["SV_int"].Count}");
+            Debug.WriteLine($"slicedRecordDictionary:{slicedRecordDictionary["SV_int"].Count}");
+            Debug.WriteLine($"dataPointViewModel.DateTimeList:{dataPointViewModel.DateTimeList.Count}");
+            Debug.WriteLine($"dateTimeCopy:{dateTimeCopy.Count}");
+            Debug.WriteLine($"dataPointViewModel.TimeStringList:{dataPointViewModel.TimeStringList.Count}");
+            Debug.WriteLine($"dateLabels:{dateLabels.Count}");
         }
 
         private void CreateCheckboxes()
@@ -109,32 +124,30 @@ namespace ModbusWPF.Views
 
         private void SliceData()
         {
-            // 清空slicedRecordDictionary数据
-            foreach (var valueList in slicedRecordDictionary.Values)
+
+            lock (RecordLock)
             {
-                valueList.Clear();
+                dateTimeCopy = new List<DateTime>(dataPointViewModel.DateTimeList);
+                dateStringCopy = new List<string>(dataPointViewModel.DateStringList);
+                timeStringCopy = new List<string>(dataPointViewModel.TimeStringList);
+                dataRecordsCopy = new Dictionary<string, List<float>>(dataPointViewModel.DataRecordsDictionary);
             }
 
             //根据时间范围选择起止index
-            int startIndex = FindStartIndex(dataPointViewModel.DateTimeList, minDateTime);
-            int endIndex = FindEndIndex(dataPointViewModel.DateTimeList, maxDateTime);
-            
+            int startIndex = FindStartIndex(dateTimeCopy, minDateTime);
+            int endIndex = FindEndIndex(dateTimeCopy, maxDateTime);
+
             //截取数据放入slicedRecordDictionary
-            foreach (var key in dataPointViewModel.DataRecordsDictionary.Keys)
+            foreach (var key in dataRecordsCopy.Keys)
             {
-                var fullList = dataPointViewModel.DataRecordsDictionary[key];
+                var fullList = dataRecordsCopy[key];
                 var filteredList = fullList.Skip(startIndex).Take(endIndex - startIndex + 1).ToList();
                 slicedRecordDictionary[key] = filteredList;
             }
 
             //截取日期时间数据并转换为字符用作X轴标签
-            timeLabels.Clear();
-            dateLabels.Clear();
-            for (int i = startIndex; i <= endIndex; i++)
-            {
-                timeLabels.Add(dataPointViewModel.DateTimeList[i].ToString("HH:mm:ss"));
-                dateLabels.Add(dataPointViewModel.DateTimeList[i].ToString("yyyy-MM-dd"));
-            }
+            timeLabels = timeStringCopy.Skip(startIndex).Take(endIndex - startIndex + 1).ToList();
+            dateLabels = dateStringCopy.Skip(startIndex).Take(endIndex - startIndex + 1).ToList();
 
             int FindStartIndex(List<DateTime> dateTimeList, DateTime minDateTime)
             {
@@ -184,7 +197,7 @@ namespace ModbusWPF.Views
 
         private void RefreshChartSeries()
         {
-            ChartSeries.Clear();
+            ChartSeries = new ObservableCollection<ISeries>();
             cartesianChart.XAxes = new List<Axis>
             {
                 new Axis { Labels = timeLabels },
@@ -198,6 +211,7 @@ namespace ModbusWPF.Views
                     AddChartSeries(checkBox.Content.ToString());
                 }
             }
+            cartesianChart.Series = ChartSeries;
         }
 
 
@@ -206,7 +220,7 @@ namespace ModbusWPF.Views
             var lineSeries = new LineSeries<float>
             {
                 Name = dataPointName,
-                Values = slicedRecordDictionary[dataPointName],
+                Values = new List<float>(slicedRecordDictionary[dataPointName]),
                 Fill = null,
                 GeometryFill = null,
                 GeometryStroke = null,
@@ -220,8 +234,8 @@ namespace ModbusWPF.Views
 
         private void UpdateDateTimeControl()
         {
-            minDateTime = dataPointViewModel.DateTimeList[0];
-            maxDateTime =dataPointViewModel.DateTimeList.Last();
+            minDateTime = dateTimeCopy[0];
+            maxDateTime = dateTimeCopy.Last();
 
             StartDate.SelectedDate = minDateTime.Date;
             StartHour.Text = minDateTime.Hour.ToString("D2");
@@ -246,8 +260,8 @@ namespace ModbusWPF.Views
         private void RefreshBtnClicked(object sender, RoutedEventArgs e)
         {
             LoadAllData();
-            RefreshChartSeries();
             UpdateDateTimeControl();
+            RefreshChartSeries();
         }
 
         private bool ValidateAndParseDateTime()

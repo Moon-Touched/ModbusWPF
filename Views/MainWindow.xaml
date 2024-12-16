@@ -59,20 +59,20 @@
 
         <Button x:Name="HisBtn" Content="历史趋势" Margin="733,623,1092,389"  Click="HisBtnClicked"/>
         <StackPanel Height="80" Width="200" Orientation="Vertical" Margin="502,338,1218,647">
-            <TextBlock Text="Com10_float" FontSize="{DynamicResource GlobalFontSize}"  HorizontalAlignment="Left"/>
-            <mah:NumericUpDown Value="{Binding DataPointsDictionary[Com10_float].Value, Mode=TwoWay}" HorizontalAlignment="Left" VerticalAlignment="Top" MinWidth="180"
-                TextAlignment="Left"
-                StringFormat="F2"
-                FontSize="{DynamicResource GlobalFontSize}"
-                Interval="0.5"/>
-        </StackPanel>
-        <StackPanel Height="80" Width="200" Orientation="Vertical" Margin="502,466,1218,519">
-            <TextBlock Text="Com10_int" FontSize="{DynamicResource GlobalFontSize}"  HorizontalAlignment="Left"/>
-            <mah:NumericUpDown Value="{Binding DataPointsDictionary[Com10_int].Value, Mode=TwoWay}" HorizontalAlignment="Left" VerticalAlignment="Top" MinWidth="180"
+            <TextBlock Text="vitrual_int" FontSize="{DynamicResource GlobalFontSize}"  HorizontalAlignment="Left"/>
+            <mah:NumericUpDown Value="{Binding DataPointsDictionary[vitrual_int].Value, Mode=TwoWay}" HorizontalAlignment="Left" VerticalAlignment="Top" MinWidth="180"
                 TextAlignment="Left"
                 StringFormat="F0"
                 FontSize="{DynamicResource GlobalFontSize}"
                 Interval="1"/>
+        </StackPanel>
+        <StackPanel Height="80" Width="200" Orientation="Vertical" Margin="502,466,1218,519">
+            <TextBlock Text="vitrual_float" FontSize="{DynamicResource GlobalFontSize}"  HorizontalAlignment="Left"/>
+            <mah:NumericUpDown Value="{Binding DataPointsDictionary[vitrual_float].Value, Mode=TwoWay}" HorizontalAlignment="Left" VerticalAlignment="Top" MinWidth="180"
+                TextAlignment="Left"
+                StringFormat="F2"
+                FontSize="{DynamicResource GlobalFontSize}"
+                Interval="0.5"/>
         </StackPanel>
     </Grid>
 </Window>
