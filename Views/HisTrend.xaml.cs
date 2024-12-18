@@ -10,6 +10,7 @@ using OxyPlot.Series;
 using OxyPlot.Axes;
 using OxyPlot.Legends;
 using OxyPlot.Utilities;
+using System.Xml.Linq;
 
 namespace ModbusWPF.Views
 {
@@ -33,7 +34,7 @@ namespace ModbusWPF.Views
         private Dictionary<string, int> dataIndexDictionary;
         private Dictionary<string, string> dataTypeDictionary;
         private string[] fullRecord;
-        private double[] dateTimeList;
+        private double[] dateTimeDoubleList;
         private Dictionary<string, DataPoint[]> slicedDictionary;
         private Dictionary<string, double[]> fullDictionary;
         private string hisCSVPath;
@@ -49,7 +50,7 @@ namespace ModbusWPF.Views
             dataTypeDictionary = new Dictionary<string, string>();
             fullDictionary = new Dictionary<string, double[]>();
             slicedDictionary=new Dictionary<string, DataPoint[]>();
-            dateTimeList = [];
+            dateTimeDoubleList = [];
             RecordLock = dataPointViewModel.RecordLock;
             this.hisCSVPath = hisCSVPath;
             InitializeData(dataCSVPath, this.hisCSVPath);
@@ -114,7 +115,7 @@ namespace ModbusWPF.Views
             {
                 string[] dataStrings = fullRecord[i].Split(",");
                 var dateTime = ParseDateTime(dataStrings[0], dataStrings[1]);
-                dateTimeList[i] = DateTimeAxis.ToDouble(dateTime);
+                dateTimeDoubleList[i] = dateTime.ToOADate()+1;
                 foreach (var name in dataTypeDictionary.Keys)
                 {
                     if (dataTypeDictionary[name] == "bool" || dataTypeDictionary[name] == "bool_int")
@@ -138,7 +139,7 @@ namespace ModbusWPF.Views
 
         private void InitializeArray(int count)
         {
-            dateTimeList = new double[count];
+            dateTimeDoubleList = new double[count];
             foreach (var name in dataTypeDictionary.Keys)
             {
                 fullDictionary[name] = new double[count];
@@ -176,8 +177,8 @@ namespace ModbusWPF.Views
         private void SliceDataByTimeRange()
         {
             //根据时间范围选择起止index
-            int startIndex = FindStartIndex(dateTimeList, minDateTime);
-            int endIndex = FindEndIndex(dateTimeList, maxDateTime);
+            int startIndex = FindStartIndex(dateTimeDoubleList, minDateTime);
+            int endIndex = FindEndIndex(dateTimeDoubleList, maxDateTime);
             int length = endIndex - startIndex;
 
             //截取数据放入slicedRecordDictionary
@@ -232,14 +233,15 @@ namespace ModbusWPF.Views
         {
             foreach (var name in dataTypeDictionary.Keys)
             {
+                slicedDictionary[name] = new DataPoint[length];
                 for (int i = 0; i < length; i++)
                 {
-                    slicedDictionary[name][i] = new DataPoint(dateTimeList[i + startIndex], fullDictionary[name][i+startIndex]);
+                    slicedDictionary[name][i] = new DataPoint(dateTimeDoubleList[i + startIndex], fullDictionary[name][i+startIndex]);
                 }
             }
 
             end = DateTime.Now;
-            InfoBlock.Text = $"共有{fullRecord.Length}条数据\n{(end - start).TotalMilliseconds}ms";
+            InfoBlock.Text = $"共有{fullRecord.Length}条数据\n截取了{slicedDictionary.Values.First().Length}\n{(end - start).TotalMilliseconds}ms";
         }
 
         /// <summary>
@@ -283,8 +285,8 @@ namespace ModbusWPF.Views
         /// </summary>
         private void UpdateDateTimeControl()
         {
-            minDateTime = dateTimeList[0];
-            maxDateTime = dateTimeList.Last();
+            minDateTime = dateTimeDoubleList[0];
+            maxDateTime = dateTimeDoubleList.Last();
 
             var min= DateTimeAxis.ToDateTime(minDateTime);
             StartDate.SelectedDate = min.Date;
