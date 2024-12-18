@@ -53,7 +53,7 @@ namespace ModbusWPF.Views
         private void OnWindowLoaded(object sender, RoutedEventArgs args)
         {
             Task.Run(() => dataPointViewModel.StartTasks(100));
-            Task.Run(() => dataPointViewModel.RecordData(HisCSVPath, 100));
+            Task.Run(() => dataPointViewModel.RecordData(HisCSVPath, 10));
         }
 
         private void MainGrid_MouseDown(object sender, MouseButtonEventArgs e)
