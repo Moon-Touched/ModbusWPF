@@ -43,7 +43,7 @@ namespace ModbusWPF.Views
         private void HisBtnClicked(object sender, RoutedEventArgs e)
         {
             HisBtn.IsEnabled = false;
-            var hisTrendWindow = new HisTrendWindow(hisCSVPath, dataCSVPath, dataPointViewModel);
+            var hisTrendWindow = new HisTrendWindow("C:\\ModbusWPF data\\DataRecord_20241218_203248.csv", dataCSVPath, dataPointViewModel);
             hisTrendWindow.Show();
             hisTrendWindow.Closed += OnHisWindowClosed;
         }

@@ -26,6 +26,9 @@ namespace ModbusWPF.Views
         private DateTime minDateTime;
         private DateTime maxDateTime;
 
+        private DateTime start;
+        private DateTime end;
+
         private Dictionary<string, SKColor> lineColorsDictionary;
         private List<SKColor> lineColors = new List<SKColor>
         {SKColors.Blue, SKColors.Black, SKColors.Yellow, SKColors.Green, SKColors.Red, SKColors.Orange, SKColors.Cyan};
@@ -72,6 +75,7 @@ namespace ModbusWPF.Views
             CreateCheckboxes();
             LoadAllData();
             UpdateDateTimeControl();
+            SliceData(0, fullRecord.Length);
             RefreshChartSeries();
         }
         /// <summary>
@@ -111,11 +115,12 @@ namespace ModbusWPF.Views
         /// </summary>
         private void LoadAllData()
         {
+            start= DateTime.Now;
             lock (RecordLock)
             {
                 fullRecord = File.ReadAllLines(hisCSVPath).Skip(1).ToArray();
             }
-            InfoBlock.Text = $"共有{fullRecord.Length}条数据";
+            InfoBlock.Text = $"共有{fullRecord.Length}条数据\n";
 
             int count = fullRecord.Length;
             InitializeArray(count);
@@ -128,9 +133,7 @@ namespace ModbusWPF.Views
             {
                 string[] dataStrings = fullRecord[i].Split(",");
                 fullDateLabels[i] = dataStrings[0];
-                slicedDateLabels[i] = dataStrings[0];
                 fullTimeLabels[i] = dataStrings[1];
-                slicedTimeLabels[i] = dataStrings[1];
                 dateTimeList[i] = ParseDateTime(dataStrings[0], dataStrings[1]);
                 foreach(var name in dataTypeDictionary.Keys)
                 {
@@ -138,23 +141,18 @@ namespace ModbusWPF.Views
                     switch (dataTypeDictionary[name])
                     {
                         case "bool":
-                            slicedBoolDictionary[name][i] = bool.Parse(dataStrings[j]);
                             fullBoolDictionary[name][i] = bool.Parse(dataStrings[j]);
                             break;
                         case "int16":
-                            slicedInt16Dictionary[name][i] = short.Parse(dataStrings[j]);
                             fullInt16Dictionary[name][i] = short.Parse(dataStrings[j]);
                             break;
                         case "float32":
-                            slicedFloatDictionary[name][i] = float.Parse(dataStrings[j]);
                             fullFloatDictionary[name][i] = float.Parse(dataStrings[j]);
                             break;
                         case "float_int":
-                            slicedFloatDictionary[name][i] = float.Parse(dataStrings[j]);
                             fullFloatDictionary[name][i] = float.Parse(dataStrings[j]);
                             break;
                         case "bool_int":
-                            slicedBoolDictionary[name][i] = bool.Parse(dataStrings[j]);
                             fullBoolDictionary[name][i] = bool.Parse(dataStrings[j]);
                             break;
                         default:
@@ -176,22 +174,18 @@ namespace ModbusWPF.Views
                 switch (dataTypeDictionary[name])
                 {
                     case "bool":
-                        slicedBoolDictionary[name] = new bool[count];
                         fullBoolDictionary[name] = new bool[count];
                         break;
                     case "int16":
-                        slicedInt16Dictionary[name] = new short[count];
                         fullInt16Dictionary[name] = new short[count];
                         break;
                     case "float32":
-                        slicedFloatDictionary[name] = new float[count];
                         fullFloatDictionary[name] = new float[count];
                         break;
                     case "float_int":
-                        slicedFloatDictionary[name] = new float[count];
+                        fullFloatDictionary[name] = new float[count];
                         break;
                     case "bool_int":
-                        slicedBoolDictionary[name] = new bool[count];
                         fullBoolDictionary[name] = new bool[count];
                         break;
                     default:
@@ -229,7 +223,7 @@ namespace ModbusWPF.Views
             RefreshChartSeries();
         }
 
-        private void SliceData()
+        private void SliceDataByTimeRange()
         {
             //根据时间范围选择起止index
             int startIndex = FindStartIndex(dateTimeList, minDateTime);
@@ -237,40 +231,7 @@ namespace ModbusWPF.Views
             int length = endIndex - startIndex;
 
             //截取数据放入slicedRecordDictionary
-            foreach (var name in dataTypeDictionary.Keys)
-            {
-                switch (dataTypeDictionary[name])
-                {
-                    case "bool":
-                        slicedBoolDictionary[name] = new bool[length];
-                        Array.Copy(fullBoolDictionary[name], startIndex, slicedBoolDictionary[name], 0, length);
-                        break;
-                    case "int16":
-                        slicedInt16Dictionary[name] = new short[length];
-                        Array.Copy(fullInt16Dictionary[name], startIndex, slicedInt16Dictionary[name], 0, length);
-                        break;
-                    case "float32":
-                        slicedFloatDictionary[name] = new float[length];
-                        Array.Copy(fullFloatDictionary[name], startIndex, slicedFloatDictionary[name], 0, length);
-                        break;
-                    case "float_int":
-                        slicedFloatDictionary[name] = new float[length];
-                        Array.Copy(fullFloatDictionary[name], startIndex, slicedFloatDictionary[name], 0, length);
-                        break;
-                    case "bool_int":
-                        slicedBoolDictionary[name] = new bool[length];
-                        Array.Copy(fullBoolDictionary[name], startIndex, slicedBoolDictionary[name], 0, length);
-                        break;
-                    default:
-                        throw new InvalidOperationException($"Unsupported data type: {dataTypeDictionary[name]}");
-                }
-            }
-
-            //截取日期时间数据并转换为字符用作X轴标签
-            slicedTimeLabels = new string[length];
-            Array.Copy(fullTimeLabels, startIndex, slicedTimeLabels, 0, length);
-            slicedDateLabels = new string[length];
-            Array.Copy(fullDateLabels, startIndex, slicedDateLabels, 0, length);
+            SliceData(startIndex, length);
 
             int FindStartIndex(DateTime[] dateTimeList, DateTime minDateTime)
             {
@@ -315,6 +276,47 @@ namespace ModbusWPF.Views
 
                 return endIndex;
             }
+        }
+
+        private void SliceData(int startIndex, int length)
+        {
+            foreach (var name in dataTypeDictionary.Keys)
+            {
+                switch (dataTypeDictionary[name])
+                {
+                    case "bool":
+                        slicedBoolDictionary[name] = new bool[length];
+                        Array.Copy(fullBoolDictionary[name], startIndex, slicedBoolDictionary[name], 0, length);
+                        break;
+                    case "int16":
+                        slicedInt16Dictionary[name] = new short[length];
+                        Array.Copy(fullInt16Dictionary[name], startIndex, slicedInt16Dictionary[name], 0, length);
+                        break;
+                    case "float32":
+                        slicedFloatDictionary[name] = new float[length];
+                        Array.Copy(fullFloatDictionary[name], startIndex, slicedFloatDictionary[name], 0, length);
+                        break;
+                    case "float_int":
+                        slicedFloatDictionary[name] = new float[length];
+                        Array.Copy(fullFloatDictionary[name], startIndex, slicedFloatDictionary[name], 0, length);
+                        break;
+                    case "bool_int":
+                        slicedBoolDictionary[name] = new bool[length];
+                        Array.Copy(fullBoolDictionary[name], startIndex, slicedBoolDictionary[name], 0, length);
+                        break;
+                    default:
+                        throw new InvalidOperationException($"Unsupported data type: {dataTypeDictionary[name]}");
+                }
+            }
+
+            //截取日期时间数据并转换为字符用作X轴标签
+            slicedTimeLabels = new string[length];
+            Array.Copy(fullTimeLabels, startIndex, slicedTimeLabels, 0, length);
+            slicedDateLabels = new string[length];
+            Array.Copy(fullDateLabels, startIndex, slicedDateLabels, 0, length);
+
+            end = DateTime.Now;
+            InfoBlock.Text = $"共有{fullRecord.Length}条数据\n{(end - start).TotalMilliseconds}ms";
         }
 
         /// <summary>
@@ -437,7 +439,7 @@ namespace ModbusWPF.Views
         {
             if (ValidateAndParseDateTime())
             {
-                SliceData();
+                SliceDataByTimeRange();
                 RefreshChartSeries();
             }
         }
@@ -446,6 +448,7 @@ namespace ModbusWPF.Views
         {
             LoadAllData();
             UpdateDateTimeControl();
+            SliceData(0, fullRecord.Length);
             RefreshChartSeries();
         }
 
