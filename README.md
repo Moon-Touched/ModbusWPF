@@ -2,7 +2,7 @@
 - 用于Modbus通信的界面开发，可实现int16，float32，bool类型的数据读写。
 - 按一定间隔记录csv格式数据日志。
 - 历史趋势曲线，可以筛选某一时间段内的数据。
-使用的第三方库：NModbus，MahApps.Metro，liveCharts2
+使用的第三方库：NModbus，MahApps.Metro，Oxyplot
 
 
 # 使用方法：
