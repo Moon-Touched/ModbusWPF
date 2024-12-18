@@ -115,7 +115,7 @@ namespace ModbusWPF.Views
             {
                 fullRecord = File.ReadAllLines(hisCSVPath).Skip(1).ToArray();
             }
-            Debug.WriteLine($"共有{fullRecord.Length}条数据");
+            InfoBlock.Text = $"共有{fullRecord.Length}条数据";
 
             int count = fullRecord.Length;
             InitializeArray(count);

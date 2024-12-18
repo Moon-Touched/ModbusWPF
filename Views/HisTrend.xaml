@@ -39,7 +39,7 @@
 
             </ListView>
             <Button Content="刷新数据" Click="RefreshBtnClicked" FontSize="{DynamicResource GlobalFontSize}"/>
-            <TextBlock x:Name="InfoBlock"/>
+            <TextBlock x:Name="InfoBlock" FontSize="{DynamicResource GlobalFontSize}"/>
         </StackPanel>
         
         <lvc:CartesianChart x:Name="cartesianChart" Grid.Column="2" FontSize="20" LegendPosition="Right" ZoomMode="X"/>
