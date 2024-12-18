@@ -14,6 +14,7 @@ using LiveChartsCore.SkiaSharpView.Painting;
 using ModbusWPF.ViewModel;
 using ModbusWPF.Models;
 using System.Diagnostics;
+using System.Data.Common;
 
 namespace ModbusWPF.Views
 {
@@ -24,96 +25,196 @@ namespace ModbusWPF.Views
     {
         private DateTime minDateTime;
         private DateTime maxDateTime;
+
+        private DateTime start;
+        private DateTime end;
+
         private Dictionary<string, SKColor> lineColorsDictionary;
         private List<SKColor> lineColors = new List<SKColor>
         {SKColors.Blue, SKColors.Black, SKColors.Yellow, SKColors.Green, SKColors.Red, SKColors.Orange, SKColors.Cyan};
-        private List<string> dateLabels;
-        private List<string> timeLabels;
 
-        private readonly DataPointViewModel dataPointViewModel;
-        private Dictionary<string, List<float>> slicedRecordDictionary;
-        private List<DateTime> dateTimeCopy;
-        private List<string> dateStringCopy;
-        private List<string> timeStringCopy;
-        private Dictionary<string, List<float>> dataRecordsCopy;
+        private Dictionary<string, int> dataIndexDictionary;
+        private Dictionary<string, string> dataTypeDictionary;
+        private string[] fullRecord;
+        private DateTime[] dateTimeList;
+        private string[] slicedDateLabels;
+        private string[] fullDateLabels;
+        private string[] slicedTimeLabels;
+        private string[] fullTimeLabels;
+        private Dictionary<string, bool[]> slicedBoolDictionary;
+        private Dictionary<string, bool[]> fullBoolDictionary;
+        private Dictionary<string, short[]> slicedInt16Dictionary;
+        private Dictionary<string, short[]> fullInt16Dictionary;
+        private Dictionary<string, float[]> slicedFloatDictionary;
+        private Dictionary<string, float[]> fullFloatDictionary;
+        string hisCSVPath;
         public readonly object RecordLock;
 
         public ObservableCollection<ISeries> ChartSeries = new ObservableCollection<ISeries>();
 
-        public HisTrendWindow(DataPointViewModel dataPointViewModel)
+        public HisTrendWindow(string hisCSVPath, string dataCSVPath, DataPointViewModel dataPointViewModel)
         {
             InitializeComponent();
             this.WindowState = WindowState.Maximized;
-            this.dataPointViewModel = dataPointViewModel;
-            slicedRecordDictionary = new Dictionary<string, List<float>>();
-            dateLabels = new List<string>();
-            timeLabels = new List<string>();
-            dateTimeCopy = new List<DateTime>();
-            dateStringCopy = new List<string>();
-            timeStringCopy = new List<string>();
-            dataRecordsCopy = new Dictionary<string, List<float>>();
+            dataIndexDictionary = new Dictionary<string, int>();
+            dataTypeDictionary = new Dictionary<string, string>();
+            slicedBoolDictionary = new Dictionary<string, bool[]>();
+            fullBoolDictionary = new Dictionary<string, bool[]>();
+            slicedInt16Dictionary = new Dictionary<string, short[]>();
+            fullInt16Dictionary = new Dictionary<string, short[]>();
+            slicedFloatDictionary = new Dictionary<string, float[]>();
+            fullFloatDictionary = new Dictionary<string, float[]>();
+            dateTimeList = [];
+            slicedDateLabels = [];
+            fullDateLabels = [];
+            slicedTimeLabels = [];
+            fullTimeLabels = [];
             RecordLock = dataPointViewModel.RecordLock;
-
-            InitializeData();
+            this.hisCSVPath = hisCSVPath;
+            InitializeData(dataCSVPath, this.hisCSVPath);
             CreateCheckboxes();
             LoadAllData();
             UpdateDateTimeControl();
+            SliceData(0, fullRecord.Length);
             RefreshChartSeries();
         }
         /// <summary>
-        /// 初始化数据, 为每个数据点创建一个空的列表，初始化线的颜色
+        /// 初始化数据, 读取变量列表和数据类型，分配线条颜色。
         /// </summary>
-        private void InitializeData()
+        private void InitializeData(string dataCSVPath,string hisCSVPath)
         {
-            foreach (var name in dataPointViewModel.DataPointsDictionary.Keys)
+            var lines = File.ReadAllLines(dataCSVPath).Skip(1);
+            foreach (var line in lines)
             {
-                if (!slicedRecordDictionary.ContainsKey(name))
-                {
-                    slicedRecordDictionary[name] = new List<float>();
-                }
+                var info = line.Split(',');
+                string name = info[0];
+                string dataType = info[1];
+                dataTypeDictionary[name] = dataType;
             }
-            lineColorsDictionary = new Dictionary<string, SKColor>();
-            for (int i = 0; i < dataPointViewModel.DataPointsDictionary.Count; i++)
+
+            string[] header;
+            lock (RecordLock)
             {
-                lineColorsDictionary[dataPointViewModel.DataPointsDictionary.Keys.ToList()[i]] = lineColors[i % 7];
+                header = File.ReadAllLines(hisCSVPath)[0].Split(",");
+            }
+            for (int i = 2; i < header.Length; i++)
+            {
+                string name = header[i];
+                dataIndexDictionary[name] = i;
+            }
+
+            lineColorsDictionary = new Dictionary<string, SKColor>();
+            for (int i = 0; i < dataTypeDictionary.Keys.Count; i++)
+            {
+                lineColorsDictionary[dataTypeDictionary.Keys.ToList()[i]] = lineColors[i % lineColors.Count];
             }
         }
 
         /// <summary>
-        /// 把所有数据复制到slicedRecordDictionary和dateLabels，timeLabels中
+        /// 加锁读取csv，然后将数据分配到对应的数组中。
         /// </summary>
         private void LoadAllData()
         {
+            start= DateTime.Now;
             lock (RecordLock)
             {
-                slicedRecordDictionary = new Dictionary<string, List<float>>( dataPointViewModel.DataRecordsDictionary);
-                dateTimeCopy = new List<DateTime>(dataPointViewModel.DateTimeList);
-                dateLabels = new List<string>(dataPointViewModel.DateStringList);
-                timeLabels = new List<string>(dataPointViewModel.TimeStringList);
+                fullRecord = File.ReadAllLines(hisCSVPath).Skip(1).ToArray();
             }
-            Debug.WriteLine($"dataPointViewModel.DataRecordsDictionary:{dataPointViewModel.DataRecordsDictionary["SV_int"].Count}");
-            Debug.WriteLine($"slicedRecordDictionary:{slicedRecordDictionary["SV_int"].Count}");
-            Debug.WriteLine($"dataPointViewModel.DateTimeList:{dataPointViewModel.DateTimeList.Count}");
-            Debug.WriteLine($"dateTimeCopy:{dateTimeCopy.Count}");
-            Debug.WriteLine($"dataPointViewModel.TimeStringList:{dataPointViewModel.TimeStringList.Count}");
-            Debug.WriteLine($"dateLabels:{dateLabels.Count}");
+            InfoBlock.Text = $"共有{fullRecord.Length}条数据\n";
+
+            int count = fullRecord.Length;
+            InitializeArray(count);
+            AddData(count);
         }
 
+        private void AddData(int count)
+        {
+            for (int i = 0; i < count; i++)
+            {
+                string[] dataStrings = fullRecord[i].Split(",");
+                fullDateLabels[i] = dataStrings[0];
+                fullTimeLabels[i] = dataStrings[1];
+                dateTimeList[i] = ParseDateTime(dataStrings[0], dataStrings[1]);
+                foreach(var name in dataTypeDictionary.Keys)
+                {
+                    int j=dataIndexDictionary[name];
+                    switch (dataTypeDictionary[name])
+                    {
+                        case "bool":
+                            fullBoolDictionary[name][i] = bool.Parse(dataStrings[j]);
+                            break;
+                        case "int16":
+                            fullInt16Dictionary[name][i] = short.Parse(dataStrings[j]);
+                            break;
+                        case "float32":
+                            fullFloatDictionary[name][i] = float.Parse(dataStrings[j]);
+                            break;
+                        case "float_int":
+                            fullFloatDictionary[name][i] = float.Parse(dataStrings[j]);
+                            break;
+                        case "bool_int":
+                            fullBoolDictionary[name][i] = bool.Parse(dataStrings[j]);
+                            break;
+                        default:
+                            throw new InvalidOperationException($"Unsupported data type: {dataTypeDictionary[name]}");
+                    }
+                }
+            }
+        }
+
+        private void InitializeArray(int count)
+        {
+            dateTimeList = new DateTime[count];
+            slicedTimeLabels=new string[count];
+            fullTimeLabels = new string[count];
+            slicedDateLabels = new string[count];
+            fullDateLabels = new string[count];
+            foreach (var name in dataTypeDictionary.Keys)
+            {
+                switch (dataTypeDictionary[name])
+                {
+                    case "bool":
+                        fullBoolDictionary[name] = new bool[count];
+                        break;
+                    case "int16":
+                        fullInt16Dictionary[name] = new short[count];
+                        break;
+                    case "float32":
+                        fullFloatDictionary[name] = new float[count];
+                        break;
+                    case "float_int":
+                        fullFloatDictionary[name] = new float[count];
+                        break;
+                    case "bool_int":
+                        fullBoolDictionary[name] = new bool[count];
+                        break;
+                    default:
+                        throw new InvalidOperationException($"Unsupported data type: {dataTypeDictionary[name]}");
+                }
+            }
+        }
+
+        /// <summary>
+        /// 为每个数据点创建复选框
+        /// </summary>
         private void CreateCheckboxes()
         {
             var fontSize = (double)FindResource("GlobalFontSize");
-            foreach (var name in dataPointViewModel.DataPointsDictionary.Keys)
+            foreach (var name in dataTypeDictionary.Keys)
             {
-                var checkbox = new CheckBox
+                if (dataTypeDictionary[name]!="bool" && dataTypeDictionary[name] != "bool_int")
                 {
-                    Name = name,
-                    FontSize = fontSize,
-                    Content = name,
-                    IsChecked = true
-                };
-                checkbox.Checked += CheckboxCheckedChanged;
-                checkbox.Unchecked += CheckboxCheckedChanged;
-                DataSelecter.Items.Add(checkbox);
+                    var checkbox = new CheckBox
+                    {
+                        Name = name,
+                        FontSize = fontSize,
+                        Content = name,
+                        IsChecked = true
+                    };
+                    checkbox.Checked += CheckboxCheckedChanged;
+                    checkbox.Unchecked += CheckboxCheckedChanged;
+                    DataSelecter.Items.Add(checkbox);
+                }
             }
         }
 
@@ -122,36 +223,19 @@ namespace ModbusWPF.Views
             RefreshChartSeries();
         }
 
-        private void SliceData()
+        private void SliceDataByTimeRange()
         {
-
-            lock (RecordLock)
-            {
-                dateTimeCopy = new List<DateTime>(dataPointViewModel.DateTimeList);
-                dateStringCopy = new List<string>(dataPointViewModel.DateStringList);
-                timeStringCopy = new List<string>(dataPointViewModel.TimeStringList);
-                dataRecordsCopy = new Dictionary<string, List<float>>(dataPointViewModel.DataRecordsDictionary);
-            }
-
             //根据时间范围选择起止index
-            int startIndex = FindStartIndex(dateTimeCopy, minDateTime);
-            int endIndex = FindEndIndex(dateTimeCopy, maxDateTime);
+            int startIndex = FindStartIndex(dateTimeList, minDateTime);
+            int endIndex = FindEndIndex(dateTimeList, maxDateTime);
+            int length = endIndex - startIndex;
 
             //截取数据放入slicedRecordDictionary
-            foreach (var key in dataRecordsCopy.Keys)
-            {
-                var fullList = dataRecordsCopy[key];
-                var filteredList = fullList.Skip(startIndex).Take(endIndex - startIndex + 1).ToList();
-                slicedRecordDictionary[key] = filteredList;
-            }
+            SliceData(startIndex, length);
 
-            //截取日期时间数据并转换为字符用作X轴标签
-            timeLabels = timeStringCopy.Skip(startIndex).Take(endIndex - startIndex + 1).ToList();
-            dateLabels = dateStringCopy.Skip(startIndex).Take(endIndex - startIndex + 1).ToList();
-
-            int FindStartIndex(List<DateTime> dateTimeList, DateTime minDateTime)
+            int FindStartIndex(DateTime[] dateTimeList, DateTime minDateTime)
             {
-                int left = 0, right = dateTimeList.Count - 1, startIndex = -1;
+                int left = 0, right = dateTimeList.Length - 1, startIndex = -1;
 
                 while (left <= right)
                 {
@@ -171,9 +255,9 @@ namespace ModbusWPF.Views
                 return startIndex;
             }
 
-            int FindEndIndex(List<DateTime> dateTimeList, DateTime maxDateTime)
+            int FindEndIndex(DateTime[] dateTimeList, DateTime maxDateTime)
             {
-                int left = 0, right = dateTimeList.Count - 1, endIndex = -1;
+                int left = 0, right = dateTimeList.Length - 1, endIndex = -1;
 
                 while (left <= right)
                 {
@@ -194,14 +278,57 @@ namespace ModbusWPF.Views
             }
         }
 
+        private void SliceData(int startIndex, int length)
+        {
+            foreach (var name in dataTypeDictionary.Keys)
+            {
+                switch (dataTypeDictionary[name])
+                {
+                    case "bool":
+                        slicedBoolDictionary[name] = new bool[length];
+                        Array.Copy(fullBoolDictionary[name], startIndex, slicedBoolDictionary[name], 0, length);
+                        break;
+                    case "int16":
+                        slicedInt16Dictionary[name] = new short[length];
+                        Array.Copy(fullInt16Dictionary[name], startIndex, slicedInt16Dictionary[name], 0, length);
+                        break;
+                    case "float32":
+                        slicedFloatDictionary[name] = new float[length];
+                        Array.Copy(fullFloatDictionary[name], startIndex, slicedFloatDictionary[name], 0, length);
+                        break;
+                    case "float_int":
+                        slicedFloatDictionary[name] = new float[length];
+                        Array.Copy(fullFloatDictionary[name], startIndex, slicedFloatDictionary[name], 0, length);
+                        break;
+                    case "bool_int":
+                        slicedBoolDictionary[name] = new bool[length];
+                        Array.Copy(fullBoolDictionary[name], startIndex, slicedBoolDictionary[name], 0, length);
+                        break;
+                    default:
+                        throw new InvalidOperationException($"Unsupported data type: {dataTypeDictionary[name]}");
+                }
+            }
 
+            //截取日期时间数据并转换为字符用作X轴标签
+            slicedTimeLabels = new string[length];
+            Array.Copy(fullTimeLabels, startIndex, slicedTimeLabels, 0, length);
+            slicedDateLabels = new string[length];
+            Array.Copy(fullDateLabels, startIndex, slicedDateLabels, 0, length);
+
+            end = DateTime.Now;
+            InfoBlock.Text = $"共有{fullRecord.Length}条数据\n{(end - start).TotalMilliseconds}ms";
+        }
+
+        /// <summary>
+        /// 转换时间日期为字符串用作X轴标签并根据选中的复选框刷新图表
+        /// </summary>
         private void RefreshChartSeries()
         {
             ChartSeries = new ObservableCollection<ISeries>();
             cartesianChart.XAxes = new List<Axis>
             {
-                new Axis { Labels = timeLabels },
-                new Axis { Labels = dateLabels }
+                new Axis { Labels = slicedTimeLabels },
+                new Axis { Labels = slicedDateLabels }
             };
 
             foreach (CheckBox checkBox in DataSelecter.Items)
@@ -214,28 +341,88 @@ namespace ModbusWPF.Views
             cartesianChart.Series = ChartSeries;
         }
 
-
-        private void AddChartSeries(string dataPointName)
+        private void AddChartSeries(string dataName)
         {
-            var lineSeries = new LineSeries<float>
+            switch (dataTypeDictionary[dataName])
             {
-                Name = dataPointName,
-                Values = new List<float>(slicedRecordDictionary[dataPointName]),
-                Fill = null,
-                GeometryFill = null,
-                GeometryStroke = null,
-                Stroke = new SolidColorPaint(lineColorsDictionary[dataPointName]) { StrokeThickness = 1 },
-                LineSmoothness = 0
-            };
+                case "bool":
+                    var boolLineSeries = new LineSeries<bool>
+                    {
+                        Name = dataName,
+                        Values = slicedBoolDictionary[dataName],
+                        Fill = null,
+                        GeometryFill = null,
+                        GeometryStroke = null,
+                        Stroke = new SolidColorPaint(lineColorsDictionary[dataName]) { StrokeThickness = 1 },
+                        LineSmoothness = 0
+                    };
+                    ChartSeries.Add(boolLineSeries);
+                    break;
+                case "int16":
+                    var int16LineSeries = new LineSeries<short>
+                    {
+                        Name = dataName,
+                        Values = slicedInt16Dictionary[dataName],
+                        Fill = null,
+                        GeometryFill = null,
+                        GeometryStroke = null,
+                        Stroke = new SolidColorPaint(lineColorsDictionary[dataName]) { StrokeThickness = 1 },
+                        LineSmoothness = 0
+                    };
+                    ChartSeries.Add(int16LineSeries);
+                    break;
+                case "float32":
+                    var floatLineSeries = new LineSeries<float>
+                    {
+                        Name = dataName,
+                        Values = slicedFloatDictionary[dataName],
+                        Fill = null,
+                        GeometryFill = null,
+                        GeometryStroke = null,
+                        Stroke = new SolidColorPaint(lineColorsDictionary[dataName]) { StrokeThickness = 1 },
+                        LineSmoothness = 0
+                    };
+                    ChartSeries.Add(floatLineSeries);
+                    break;
+                case "float_int":
+                    var floatIntLineSeries = new LineSeries<float>
+                    {
+                        Name = dataName,
+                        Values = slicedFloatDictionary[dataName],
+                        Fill = null,
+                        GeometryFill = null,
+                        GeometryStroke = null,
+                        Stroke = new SolidColorPaint(lineColorsDictionary[dataName]) { StrokeThickness = 1 },
+                        LineSmoothness = 0
+                    };
+                    ChartSeries.Add(floatIntLineSeries);
+                    break;
+                case "bool_int":
+                    var boolIntLineSeries = new LineSeries<bool>
+                    {
+                        Name = dataName,
+                        Values = slicedBoolDictionary[dataName],
+                        Fill = null,
+                        GeometryFill = null,
+                        GeometryStroke = null,
+                        Stroke = new SolidColorPaint(lineColorsDictionary[dataName]) { StrokeThickness = 1 },
+                        LineSmoothness = 0
+                    };
+                    ChartSeries.Add(boolIntLineSeries);
+                    break;
+                default:
+                    throw new InvalidOperationException($"Unsupported data type: {dataTypeDictionary[dataName]}");
+            }
 
-            ChartSeries.Add(lineSeries);
         }
 
-
+        /// <summary>
+        /// 将日期时间控件更新为全部数据的起止时间
+        /// </summary>
         private void UpdateDateTimeControl()
         {
-            minDateTime = dateTimeCopy[0];
-            maxDateTime = dateTimeCopy.Last();
+            minDateTime = dateTimeList[0];
+            maxDateTime = dateTimeList.Last();
 
             StartDate.SelectedDate = minDateTime.Date;
             StartHour.Text = minDateTime.Hour.ToString("D2");
@@ -252,7 +439,7 @@ namespace ModbusWPF.Views
         {
             if (ValidateAndParseDateTime())
             {
-                SliceData();
+                SliceDataByTimeRange();
                 RefreshChartSeries();
             }
         }
@@ -261,17 +448,18 @@ namespace ModbusWPF.Views
         {
             LoadAllData();
             UpdateDateTimeControl();
+            SliceData(0, fullRecord.Length);
             RefreshChartSeries();
         }
 
         private bool ValidateAndParseDateTime()
         {
-            string minDateString = StartDate.SelectedDate.ToString();
+            string minDateString = StartDate.SelectedDate.ToString().Split(" ")[0];
             string minHourString = StartHour.Text;
             string minMinuteString = StartMinute.Text;
             string minSecondString = StartSecond.Text;
 
-            string maxDateString = EndDate.SelectedDate.ToString();
+            string maxDateString = EndDate.SelectedDate.ToString().Split(" ")[0];
             string maxHourString = EndHour.Text;
             string maxMinuteString = EndMinute.Text;
             string maxSecondString = EndSecond.Text;
@@ -293,11 +481,10 @@ namespace ModbusWPF.Views
 
         private DateTime ParseDateTime(string dateString, string timeString)
         {
-            var timeParts = timeString.Split(':');
-            string hour = timeParts[0], minute = timeParts[1], second = timeParts[2].Split('.')[0];
+            DateOnly date = DateOnly.Parse(dateString);
+            TimeOnly time = TimeOnly.Parse(timeString);
 
-            DateTime date = DateTime.Parse(dateString);
-            return new DateTime(date.Year, date.Month, date.Day, int.Parse(hour), int.Parse(minute), int.Parse(second));
+            return new DateTime(date, time);
         }
 
         private bool ValidateTime(string hourString, string minuteString, string secondString)

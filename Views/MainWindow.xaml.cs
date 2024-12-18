@@ -21,15 +21,17 @@ namespace ModbusWPF.Views
     public partial class MainWindow : Window
     {
         private DataPointViewModel dataPointViewModel;
-        public string HisCSVPath;
+        public string hisCSVPath;
+        public string dataCSVPath;
+        public string portCSVPath;
         public MainWindow()
         {
             InitializeComponent();
             this.WindowState = WindowState.Maximized;
-            const string basePath = "C:/ModbusWPF data";
-            string dataCSVPath = Path.Combine(basePath,  "data_points.csv");
-            string portCSVPath = Path.Combine(basePath,  "port_info.csv");
-            HisCSVPath = Path.Combine(basePath, $"DataRecord_{DateTime.Now:yyyyMMdd_HHmmss}.csv");
+            string basePath = "C:/ModbusWPF data";
+            dataCSVPath = Path.Combine(basePath, "data_points.csv");
+            portCSVPath = Path.Combine(basePath, "port_info.csv");
+            hisCSVPath = Path.Combine(basePath, $"DataRecord_{DateTime.Now:yyyyMMdd_HHmmss}.csv");
 
             dataPointViewModel = new DataPointViewModel(dataCSVPath, portCSVPath);
             DataContext = dataPointViewModel;
@@ -37,11 +39,11 @@ namespace ModbusWPF.Views
             // 在窗口加载完成后启动任务
             Loaded += OnWindowLoaded;
         }
-        
+
         private void HisBtnClicked(object sender, RoutedEventArgs e)
         {
             HisBtn.IsEnabled = false;
-            var hisTrendWindow = new HisTrendWindow(dataPointViewModel);
+            var hisTrendWindow = new HisTrendWindow("C:\\ModbusWPF data\\DataRecord_20241218_203248.csv", dataCSVPath, dataPointViewModel);
             hisTrendWindow.Show();
             hisTrendWindow.Closed += OnHisWindowClosed;
         }
@@ -53,7 +55,7 @@ namespace ModbusWPF.Views
         private void OnWindowLoaded(object sender, RoutedEventArgs args)
         {
             Task.Run(() => dataPointViewModel.StartTasks(100));
-            Task.Run(() => dataPointViewModel.RecordData(HisCSVPath, 10));
+            Task.Run(() => dataPointViewModel.RecordData(hisCSVPath, 10));
         }
 
         private void MainGrid_MouseDown(object sender, MouseButtonEventArgs e)

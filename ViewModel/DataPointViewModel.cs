@@ -18,10 +18,6 @@ namespace ModbusWPF.ViewModel
     {
         public ModBusHelper ModbusHelper { get; set; }
         public Dictionary<string, DataPointBase> DataPointsDictionary { get; set; }
-        public Dictionary<string, List<float>> DataRecordsDictionary { get; set; }
-        public List<string> DateStringList { get; set; }
-        public List<string> TimeStringList { get; set; }
-        public List<DateTime> DateTimeList { get; set; }
         public Dictionary<string, Stack<(string taskType, DataPointBase dataPoint)>> TaskStackDictionary { get; set; }
 
         public readonly object RecordLock = new object();
@@ -30,10 +26,6 @@ namespace ModbusWPF.ViewModel
         {
             ModbusHelper = new ModBusHelper(portCSVPath);
             DataPointsDictionary = new Dictionary<string, DataPointBase>();
-            DataRecordsDictionary = new Dictionary<string, List<float>>();
-            DateTimeList = new List<DateTime>();
-            DateStringList= new List<string>();
-            TimeStringList = new List<string>();
             TaskStackDictionary = new Dictionary<string, Stack<(string taskType, DataPointBase dataPoint)>>();
             LoadDataPointsFromCsv(dataCSVPath);
         }
@@ -51,7 +43,7 @@ namespace ModbusWPF.ViewModel
                 int registerAddress = int.Parse(info[4]);
                 bool readOnly = info[5] == "Y";
 
-                DataPointBase dataPoint; 
+                DataPointBase dataPoint;
                 switch (dataType)
                 {
                     case "bool":
@@ -81,10 +73,6 @@ namespace ModbusWPF.ViewModel
                 DataPointsDictionary[name] = dataPoint;
             }
 
-            foreach (var dataName in DataPointsDictionary.Keys)
-            {
-                DataRecordsDictionary[dataName] = new List<float>();
-            }
         }
 
         public void StartTasks(int delayMilliseconds)
@@ -98,7 +86,7 @@ namespace ModbusWPF.ViewModel
 
         public async void ProcessTaskQueue(string portName, int delayMilliseconds)
         {
-            var taskStack=TaskStackDictionary[portName];
+            var taskStack = TaskStackDictionary[portName];
             while (true)
             {
                 if (taskStack.Count == 0)
@@ -152,49 +140,30 @@ namespace ModbusWPF.ViewModel
                         {
                             case BoolDataPoint boolDataPoint:
                                 values.Add(boolDataPoint.Value.ToString());
-                                if (boolDataPoint.Value)
-                                {
-                                    DataRecordsDictionary[boolDataPoint.Name].Add(1f);
-                                }
-                                else
-                                {
-                                    DataRecordsDictionary[boolDataPoint.Name].Add(0f);
-                                }
                                 break;
                             case Int16DataPoint int16DataPoint:
                                 values.Add(int16DataPoint.Value.ToString());
-                                DataRecordsDictionary[int16DataPoint.Name].Add(int16DataPoint.Value);
                                 break;
                             case Float32DataPoint float32DataPoint:
                                 values.Add(float32DataPoint.Value.ToString());
-                                DataRecordsDictionary[float32DataPoint.Name].Add(float32DataPoint.Value);
                                 break;
                             case FloatIntDataPoint floatIntDataPoint:
                                 values.Add(floatIntDataPoint.Value.ToString());
-                                DataRecordsDictionary[floatIntDataPoint.Name].Add(floatIntDataPoint.Value);
                                 break;
                             case BoolIntDataPoint boolIntDataPoint:
                                 values.Add(boolIntDataPoint.Value.ToString());
-                                if (boolIntDataPoint.Value)
-                                {
-                                    DataRecordsDictionary[boolIntDataPoint.Name].Add(1f);
-                                }
-                                else
-                                {
-                                    DataRecordsDictionary[boolIntDataPoint.Name].Add(0f);
-                                }
                                 break;
                         }
                     }
 
                     var dateTime = DateTime.Now;
-                    DateStringList.Add(dateTime.ToString("yyyy-MM-dd"));
-                    TimeStringList.Add(dateTime.ToString("HH:mm:ss.fff"));
-                    DateTimeList.Add(dateTime);
 
-                    using (var writer = new StreamWriter(filePath, true))
+                    lock (RecordLock)
                     {
-                        writer.WriteLine($"{dateTime:yyyy-MM-dd},{dateTime:HH:mm:ss.fff},{string.Join(",", values)}");
+                        using (var writer = new StreamWriter(filePath, true))
+                        {
+                            writer.WriteLine($"{dateTime:yyyy-MM-dd},{dateTime:HH:mm:ss.fff},{string.Join(",", values)}");
+                        }
                     }
                 }
 
