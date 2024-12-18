@@ -85,7 +85,7 @@ namespace ModbusWPF.Views
             CreateCheckboxes();
             LoadAllData();
             UpdateDateTimeControl();
-            SliceDataByTimeRange();
+            SliceData(0, fullRecord.Length / recordLength);
             RefreshChartSeries();
         }
         /// <summary>
