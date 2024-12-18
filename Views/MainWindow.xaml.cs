@@ -45,7 +45,7 @@ namespace ModbusWPF.Views
         private void HisBtnClicked(object sender, RoutedEventArgs e)
         {
             HisBtn.IsEnabled = false;
-            var hisTrendWindow = new HisTrendWindow(hisCSVPath, dataCSVPath, dataPointViewModel);
+            var hisTrendWindow = new HisTrendWindow(hisBinaryPath, dataCSVPath, dataPointViewModel);
             hisTrendWindow.Show();
             hisTrendWindow.Closed += OnHisWindowClosed;
         }
@@ -57,7 +57,7 @@ namespace ModbusWPF.Views
         private void OnWindowLoaded(object sender, RoutedEventArgs args)
         {
             Task.Run(() => dataPointViewModel.StartTasks(100));
-            Task.Run(() => dataPointViewModel.RecordData(hisCSVPath,hisBinaryPath, 10));
+            Task.Run(() => dataPointViewModel.RecordData(hisCSVPath, hisBinaryPath, 10));
         }
 
         private void MainGrid_MouseDown(object sender, MouseButtonEventArgs e)
