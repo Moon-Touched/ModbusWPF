@@ -26,6 +26,9 @@ namespace ModbusWPF.Views
         private DateTime minDateTime;
         private DateTime maxDateTime;
 
+        private DateTime start;
+        private DateTime end;
+
         private Dictionary<string, SKColor> lineColorsDictionary;
         private List<SKColor> lineColors = new List<SKColor>
         {SKColors.Blue, SKColors.Black, SKColors.Yellow, SKColors.Green, SKColors.Red, SKColors.Orange, SKColors.Cyan};
@@ -114,13 +117,14 @@ namespace ModbusWPF.Views
         /// </summary>
         private void LoadAllData()
         {
+            //start= DateTime.Now;
             lock (RecordLock)
             {
                 fullRecord = File.ReadAllBytes(hisBinaryPath).ToArray();
             }
 
             int count = fullRecord.Length / recordLength;
-            InfoBlock.Text = $"共有{count}条数据";
+            InfoBlock.Text = $"共有{count}条数据\n";
             //Debug.WriteLine($"共有{count}条数据");
 
             InitializeArray(count);
@@ -213,7 +217,7 @@ namespace ModbusWPF.Views
                     Name = name,
                     FontSize = fontSize,
                     Content = name,
-                    IsChecked = false,
+                    IsChecked = true,
                 };
                 checkbox.Checked += CheckboxCheckedChanged;
                 checkbox.Unchecked += CheckboxCheckedChanged;
@@ -316,6 +320,9 @@ namespace ModbusWPF.Views
             Array.Copy(fullTimeLabels, startIndex, slicedTimeLabels, 0, length);
             slicedDateLabels = new string[length];
             Array.Copy(fullDateLabels, startIndex, slicedDateLabels, 0, length);
+
+            //end = DateTime.Now;
+            //InfoBlock.Text += $"读取数据耗时:\n {(end - start).TotalMilliseconds} ms";
         }
 
         /// <summary>
