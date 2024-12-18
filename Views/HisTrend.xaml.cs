@@ -242,23 +242,23 @@ namespace ModbusWPF.Views
                 switch (dataTypeDictionary[name])
                 {
                     case "bool":
-                        slicedBoolDictionary[name] = [];
+                        slicedBoolDictionary[name] = new bool[length];
                         Array.Copy(fullBoolDictionary[name], startIndex, slicedBoolDictionary[name], 0, length);
                         break;
                     case "int16":
-                        slicedInt16Dictionary[name] = [];
+                        slicedInt16Dictionary[name] = new short[length];
                         Array.Copy(fullInt16Dictionary[name], startIndex, slicedInt16Dictionary[name], 0, length);
                         break;
                     case "float32":
-                        slicedFloatDictionary[name] = [];
+                        slicedFloatDictionary[name] = new float[length];
                         Array.Copy(fullFloatDictionary[name], startIndex, slicedFloatDictionary[name], 0, length);
                         break;
                     case "float_int":
-                        slicedFloatDictionary[name] = [];
+                        slicedFloatDictionary[name] = new float[length];
                         Array.Copy(fullFloatDictionary[name], startIndex, slicedFloatDictionary[name], 0, length);
                         break;
                     case "bool_int":
-                        slicedBoolDictionary[name] = [];
+                        slicedBoolDictionary[name] = new bool[length];
                         Array.Copy(fullBoolDictionary[name], startIndex, slicedBoolDictionary[name], 0, length);
                         break;
                     default:
@@ -267,9 +267,9 @@ namespace ModbusWPF.Views
             }
 
             //截取日期时间数据并转换为字符用作X轴标签
-            slicedTimeLabels = [];
+            slicedTimeLabels = new string[length];
             Array.Copy(fullTimeLabels, startIndex, slicedTimeLabels, 0, length);
-            slicedDateLabels = [];
+            slicedDateLabels = new string[length];
             Array.Copy(fullDateLabels, startIndex, slicedDateLabels, 0, length);
 
             int FindStartIndex(DateTime[] dateTimeList, DateTime minDateTime)
@@ -451,12 +451,12 @@ namespace ModbusWPF.Views
 
         private bool ValidateAndParseDateTime()
         {
-            string minDateString = StartDate.SelectedDate.ToString();
+            string minDateString = StartDate.SelectedDate.ToString().Split(" ")[0];
             string minHourString = StartHour.Text;
             string minMinuteString = StartMinute.Text;
             string minSecondString = StartSecond.Text;
 
-            string maxDateString = EndDate.SelectedDate.ToString();
+            string maxDateString = EndDate.SelectedDate.ToString().Split(" ")[0];
             string maxHourString = EndHour.Text;
             string maxMinuteString = EndMinute.Text;
             string maxSecondString = EndSecond.Text;
