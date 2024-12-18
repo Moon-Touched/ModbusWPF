@@ -32,7 +32,7 @@ namespace ModbusWPF.Views
 
         private Dictionary<string, int> dataIndexDictionary;
         private Dictionary<string, string> dataTypeDictionary;
-        private string[] fullRecord;
+        private byte[] fullRecord;
         private DateTime[] dateTimeList;
         private string[] slicedDateLabels;
         private string[] fullDateLabels;
@@ -44,16 +44,20 @@ namespace ModbusWPF.Views
         private Dictionary<string, short[]> fullInt16Dictionary;
         private Dictionary<string, float[]> slicedFloatDictionary;
         private Dictionary<string, float[]> fullFloatDictionary;
-        string hisCSVPath;
+        private string hisBinaryPath;
+        private int boolCount;
+        private int int16Count;
+        private int float32Count;
+        private int recordLength;
         public readonly object RecordLock;
 
         public ObservableCollection<ISeries> ChartSeries = new ObservableCollection<ISeries>();
 
-        public HisTrendWindow(string hisCSVPath, string dataCSVPath, DataPointViewModel dataPointViewModel)
+        public HisTrendWindow(string hisBinaryPath, string dataCSVPath, DataPointViewModel dataPointViewModel)
         {
             InitializeComponent();
             this.WindowState = WindowState.Maximized;
-            dataIndexDictionary = new Dictionary<string, int>();
+            dataIndexDictionary = dataPointViewModel.dataIndexDictionary;
             dataTypeDictionary = new Dictionary<string, string>();
             slicedBoolDictionary = new Dictionary<string, bool[]>();
             fullBoolDictionary = new Dictionary<string, bool[]>();
@@ -67,8 +71,12 @@ namespace ModbusWPF.Views
             slicedTimeLabels = [];
             fullTimeLabels = [];
             RecordLock = dataPointViewModel.RecordLock;
-            this.hisCSVPath = hisCSVPath;
-            InitializeData(dataCSVPath, this.hisCSVPath);
+            this.hisBinaryPath = hisBinaryPath;
+            boolCount = dataPointViewModel.boolCount;
+            int16Count = dataPointViewModel.int16Count;
+            float32Count = dataPointViewModel.float32Count;
+            recordLength = 8 + boolCount + int16Count * 2 + float32Count * 4;
+            InitializeData(dataCSVPath);
             CreateCheckboxes();
             LoadAllData();
             UpdateDateTimeControl();
@@ -77,7 +85,7 @@ namespace ModbusWPF.Views
         /// <summary>
         /// 初始化数据, 读取变量列表和数据类型，分配线条颜色。
         /// </summary>
-        private void InitializeData(string dataCSVPath,string hisCSVPath)
+        private void InitializeData(string dataCSVPath)
         {
             var lines = File.ReadAllLines(dataCSVPath).Skip(1);
             foreach (var line in lines)
@@ -88,17 +96,6 @@ namespace ModbusWPF.Views
                 dataTypeDictionary[name] = dataType;
             }
 
-            string[] header;
-            lock (RecordLock)
-            {
-                header = File.ReadAllLines(hisCSVPath)[0].Split(",");
-            }
-            for (int i = 2; i < header.Length; i++)
-            {
-                string name = header[i];
-                dataIndexDictionary[name] = i;
-            }
-
             lineColorsDictionary = new Dictionary<string, SKColor>();
             for (int i = 0; i < dataTypeDictionary.Keys.Count; i++)
             {
@@ -107,15 +104,15 @@ namespace ModbusWPF.Views
         }
 
         /// <summary>
-        /// 加锁读取csv，然后将数据分配到对应的数组中。
+        /// 加锁读取二进制文件，然后解析并将数据分配到对应的数组中。
         /// </summary>
         private void LoadAllData()
         {
             lock (RecordLock)
             {
-                fullRecord = File.ReadAllLines(hisCSVPath).Skip(1).ToArray();
+                fullRecord = File.ReadAllBytes(hisBinaryPath).Skip(1).ToArray();
             }
-            InfoBlock.Text = $"共有{fullRecord.Length}条数据";
+            InfoBlock.Text = $"共有{fullRecord.Length/recordLength}条数据";
 
             int count = fullRecord.Length;
             InitializeArray(count);
@@ -126,7 +123,7 @@ namespace ModbusWPF.Views
         {
             for (int i = 0; i < count; i++)
             {
-                string[] dataStrings = fullRecord[i].Split(",");
+                string[] dataStrings = fullRecord[i];
                 fullDateLabels[i] = dataStrings[0];
                 slicedDateLabels[i] = dataStrings[0];
                 fullTimeLabels[i] = dataStrings[1];

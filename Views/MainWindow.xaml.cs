@@ -22,6 +22,7 @@ namespace ModbusWPF.Views
     {
         private DataPointViewModel dataPointViewModel;
         public string hisCSVPath;
+        public string hisBinaryPath;
         public string dataCSVPath;
         public string portCSVPath;
         public MainWindow()
@@ -32,6 +33,7 @@ namespace ModbusWPF.Views
             dataCSVPath = Path.Combine(basePath, "data_points.csv");
             portCSVPath = Path.Combine(basePath, "port_info.csv");
             hisCSVPath = Path.Combine(basePath, $"DataRecord_{DateTime.Now:yyyyMMdd_HHmmss}.csv");
+            hisBinaryPath= Path.Combine(basePath, $"DataRecord_{DateTime.Now:yyyyMMdd_HHmmss}.bin");
 
             dataPointViewModel = new DataPointViewModel(dataCSVPath, portCSVPath);
             DataContext = dataPointViewModel;
@@ -55,7 +57,7 @@ namespace ModbusWPF.Views
         private void OnWindowLoaded(object sender, RoutedEventArgs args)
         {
             Task.Run(() => dataPointViewModel.StartTasks(100));
-            Task.Run(() => dataPointViewModel.RecordData(hisCSVPath, 10));
+            Task.Run(() => dataPointViewModel.RecordData(hisCSVPath,hisBinaryPath, 10));
         }
 
         private void MainGrid_MouseDown(object sender, MouseButtonEventArgs e)

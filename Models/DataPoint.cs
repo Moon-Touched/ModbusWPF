@@ -1,4 +1,5 @@
-﻿using System.ComponentModel;
+﻿using System;
+using System.ComponentModel;
 
 namespace ModbusWPF.Models
 {
@@ -153,6 +154,21 @@ namespace ModbusWPF.Models
             RegisterAddress = registerAddress;
             ReadOnly = readOnly;
             Value = initialValue;
+        }
+    }
+
+    public class DataRecord
+    {
+        public DateTime dateTime;
+        public bool[] boolDatas;
+        public short[] int16Datas;
+        public float[] float32Datas;
+        public DataRecord(DateTime dateTime, bool[] boolDatas, short[] int16Datas, float[] float32Datas)
+        {
+            this.dateTime = dateTime;
+            this.boolDatas = boolDatas;
+            this.int16Datas = int16Datas;
+            this.float32Datas = float32Datas;
         }
     }
 }

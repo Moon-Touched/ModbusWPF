@@ -16,17 +16,28 @@ namespace ModbusWPF.ViewModel
 {
     public class DataPointViewModel
     {
-        public ModBusHelper ModbusHelper { get; set; }
-        public Dictionary<string, DataPointBase> DataPointsDictionary { get; set; }
-        public Dictionary<string, Stack<(string taskType, DataPointBase dataPoint)>> TaskStackDictionary { get; set; }
+        public ModBusHelper modbusHelper;
+        public Dictionary<string, DataPointBase> dataPointsDictionary;
+        public Dictionary<string, Stack<(string taskType, DataPointBase dataPoint)>> taskStackDictionary;
 
         public readonly object RecordLock = new object();
 
+        public int boolCount;
+        public int int16Count;
+        public int float32Count;
+        public Dictionary<string, int> dataIndexDictionary;
+
         public DataPointViewModel(string dataCSVPath, string portCSVPath)
         {
-            ModbusHelper = new ModBusHelper(portCSVPath);
-            DataPointsDictionary = new Dictionary<string, DataPointBase>();
-            TaskStackDictionary = new Dictionary<string, Stack<(string taskType, DataPointBase dataPoint)>>();
+            modbusHelper = new ModBusHelper(portCSVPath);
+            dataPointsDictionary = new Dictionary<string, DataPointBase>();
+            taskStackDictionary = new Dictionary<string, Stack<(string taskType, DataPointBase dataPoint)>>();
+
+            boolCount = 0;
+            int16Count = 0;
+            float32Count = 0;
+            dataIndexDictionary = new Dictionary<string, int>();
+
             LoadDataPointsFromCsv(dataCSVPath);
         }
 
@@ -48,50 +59,60 @@ namespace ModbusWPF.ViewModel
                 {
                     case "bool":
                         dataPoint = new BoolDataPoint(name, dataType, portName, slaveAddress, registerAddress, readOnly, false);
+                        dataIndexDictionary[name] = boolCount;
+                        boolCount++;
                         break;
                     case "int16":
                         dataPoint = new Int16DataPoint(name, dataType, portName, slaveAddress, registerAddress, readOnly, 0);
+                        dataIndexDictionary[name] = int16Count;
+                        int16Count++;
                         break;
                     case "float32":
                         dataPoint = new Float32DataPoint(name, dataType, portName, slaveAddress, registerAddress, readOnly, 0.1f);
+                        dataIndexDictionary[name] = float32Count;
+                        float32Count++;
                         break;
                     case "float_int":
                         dataPoint = new FloatIntDataPoint(name, dataType, portName, slaveAddress, registerAddress, readOnly, 0.1f);
+                        dataIndexDictionary[name] = float32Count;
+                        float32Count++;
                         break;
                     case "bool_int":
                         dataPoint = new BoolIntDataPoint(name, dataType, portName, slaveAddress, registerAddress, readOnly, false);
+                        dataIndexDictionary[name] = boolCount;
+                        boolCount++;
                         break;
                     default:
                         throw new InvalidOperationException($"Unsupported data type: {dataType}");
                 }
 
-                ModbusHelper.ReadData(dataPoint);
+                modbusHelper.ReadData(dataPoint);
                 if (!dataPoint.ReadOnly)
                 {
                     dataPoint.PropertyChanged += DataPointPropertyChangedHandler;
                 }
-                DataPointsDictionary[name] = dataPoint;
+                dataPointsDictionary[name] = dataPoint;
             }
 
         }
 
         public void StartTasks(int delayMilliseconds)
         {
-            foreach (var portName in ModbusHelper.ModbusMasterDictionary.Keys)
+            foreach (var portName in modbusHelper.ModbusMasterDictionary.Keys)
             {
-                TaskStackDictionary[portName] = new Stack<(string taskType, DataPointBase dataPoint)>();
+                taskStackDictionary[portName] = new Stack<(string taskType, DataPointBase dataPoint)>();
                 ProcessTaskQueue(portName, delayMilliseconds);
             }
         }
 
         public async void ProcessTaskQueue(string portName, int delayMilliseconds)
         {
-            var taskStack = TaskStackDictionary[portName];
+            var taskStack = taskStackDictionary[portName];
             while (true)
             {
                 if (taskStack.Count == 0)
                 {
-                    foreach (var dataPoint in DataPointsDictionary.Values)
+                    foreach (var dataPoint in dataPointsDictionary.Values)
                     {
                         if (dataPoint.PortName == portName)
                         {
@@ -105,11 +126,11 @@ namespace ModbusWPF.ViewModel
 
                     if (taskType == "R")
                     {
-                        ModbusHelper.ReadData(dataPoint);
+                        modbusHelper.ReadData(dataPoint);
                     }
                     else if (taskType == "W")
                     {
-                        ModbusHelper.WriteData(dataPoint);
+                        modbusHelper.WriteData(dataPoint);
                         taskStack.Push(("R", dataPoint));
                     }
                     await Task.Delay(delayMilliseconds);
@@ -122,52 +143,84 @@ namespace ModbusWPF.ViewModel
             var dataPoint = (DataPointBase)sender;
             if (!dataPoint.ReadOnly)
             {
-                TaskStackDictionary[dataPoint.PortName].Push(("W", dataPoint));
+                taskStackDictionary[dataPoint.PortName].Push(("W", dataPoint));
             }
         }
 
-        public async void RecordData(string filePath, int sampleTimeMillisecond)
+        public async void RecordData(string hisCSVPath, string hisBinaryPath, int sampleTimeMillisecond)
         {
-            File.WriteAllText(filePath, $"date,time,{string.Join(",", DataPointsDictionary.Keys)}\n");
+            File.Create(hisBinaryPath).Close();
+            File.WriteAllText(hisCSVPath, $"date,time,{string.Join(",", dataPointsDictionary.Keys)}\n");
             while (true)
             {
-                List<string> values = new List<string>();
-                lock (RecordLock)
+                var values = new List<string>();
+                DataRecord dataRecord;
+                var boolValues = new List<bool>();
+                var floatValues = new List<float>();
+                var intValues = new List<short>();
+                foreach (var dataPoint in dataPointsDictionary.Values)
                 {
-                    foreach (var dataPoint in DataPointsDictionary.Values)
+                    switch (dataPoint)
                     {
-                        switch (dataPoint)
-                        {
-                            case BoolDataPoint boolDataPoint:
-                                values.Add(boolDataPoint.Value.ToString());
-                                break;
-                            case Int16DataPoint int16DataPoint:
-                                values.Add(int16DataPoint.Value.ToString());
-                                break;
-                            case Float32DataPoint float32DataPoint:
-                                values.Add(float32DataPoint.Value.ToString());
-                                break;
-                            case FloatIntDataPoint floatIntDataPoint:
-                                values.Add(floatIntDataPoint.Value.ToString());
-                                break;
-                            case BoolIntDataPoint boolIntDataPoint:
-                                values.Add(boolIntDataPoint.Value.ToString());
-                                break;
-                        }
+                        case BoolDataPoint boolDataPoint:
+                            var boolValeu = boolDataPoint.Value;
+                            values.Add(boolValeu.ToString());
+                            boolValues.Add(boolValeu);
+                            break;
+                        case Int16DataPoint int16DataPoint:
+                            var intValue = int16DataPoint.Value;
+                            values.Add(intValue.ToString());
+                            intValues.Add(intValue);
+                            break;
+                        case Float32DataPoint float32DataPoint:
+                            var floatValue = float32DataPoint.Value;
+                            values.Add(floatValue.ToString());
+                            floatValues.Add(floatValue);
+                            break;
+                        case FloatIntDataPoint floatIntDataPoint:
+                            var floatValue2 = floatIntDataPoint.Value;
+                            values.Add(floatValue2.ToString());
+                            floatValues.Add(floatValue2);
+                            break;
+                        case BoolIntDataPoint boolIntDataPoint:
+                            var boolValue2 = boolIntDataPoint.Value;
+                            values.Add(boolValue2.ToString());
+                            boolValues.Add(boolValue2);
+                            break;
                     }
 
                     var dateTime = DateTime.Now;
-
-                    lock (RecordLock)
+                    using (var writer = new StreamWriter(hisCSVPath, true))
                     {
-                        using (var writer = new StreamWriter(filePath, true))
+                        writer.WriteLine($"{dateTime:yyyy-MM-dd},{dateTime:HH:mm:ss.fff},{string.Join(",", values)}");
+                    }
+
+                    using (var binaryWriter = new BinaryWriter(File.Open(hisBinaryPath, FileMode.Append)))
+                    {
+                        lock (RecordLock)
                         {
-                            writer.WriteLine($"{dateTime:yyyy-MM-dd},{dateTime:HH:mm:ss.fff},{string.Join(",", values)}");
+                            // –¥»ÎDateTime£¨64Œª
+                            binaryWriter.Write(dateTime.Ticks);
+
+                            foreach (var boolValue in boolValues)
+                            {
+                                binaryWriter.Write(boolValue);
+                            }
+
+                            foreach (var intValue in intValues)
+                            {
+                                binaryWriter.Write(intValue);
+                            }
+
+                            foreach (var floatValue in floatValues)
+                            {
+                                binaryWriter.Write(floatValue);
+                            }
                         }
                     }
-                }
 
-                await Task.Delay(sampleTimeMillisecond);
+                    await Task.Delay(sampleTimeMillisecond);
+                }
             }
         }
     }
