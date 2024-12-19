@@ -1,8 +1,9 @@
 # 简介
 - 用于Modbus通信的界面开发，可实现int16，float32，bool类型的数据读写。
 - 按一定间隔记录csv格式数据日志。
-- 历史趋势曲线，可以筛选某一时间段内的数据。
-使用的第三方库：NModbus，MahApps.Metro，Oxyplot
+- 历史趋势曲线，默认加载程序启动后记录的所有数据，可以筛选某一时间段内的数据。
+- 实时数据曲线，点击后开始记录，默认每个数据最大存储10000个记录，数量可自定义
+- 使用的第三方库：NModbus，MahApps.Metro，Oxyplot.
 
 
 # 使用方法：
@@ -21,4 +22,4 @@
 - 每次通信的间隔，毫秒，在MainWindow.xaml.cs
   Task.Run(() => dataPointViewModel.ProcessTaskQueue(100));
 - 数据记录间隔，毫秒，在MainWindow.xaml.cs
-  Task.Run(() => dataPointViewModel.RecordData(HisCSVPath, 1000));
+  Task.Run(() => dataPointViewModel.RecordData(1000));
