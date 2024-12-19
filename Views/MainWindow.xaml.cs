@@ -20,30 +20,27 @@ namespace ModbusWPF.Views
     /// </summary>
     public partial class MainWindow : Window
     {
-        private DataPointViewModel dataPointViewModel;
-        public string hisCSVPath;
-        public string dataCSVPath;
-        public string portCSVPath;
+        private MainViewModel mainViewModel;
+        private Window realTrendWindow;
+        private Window hisTrendWindow;
         public MainWindow()
         {
             InitializeComponent();
             this.WindowState = WindowState.Maximized;
             string basePath = "C:/ModbusWPF data";
-            dataCSVPath = Path.Combine(basePath, "data_points.csv");
-            portCSVPath = Path.Combine(basePath, "port_info.csv");
-            hisCSVPath = Path.Combine(basePath, $"DataRecord_{DateTime.Now:yyyyMMdd_HHmmss}.csv");
+            mainViewModel = new MainViewModel(basePath);
+           
+            DataContext = mainViewModel;
 
-            dataPointViewModel = new DataPointViewModel(dataCSVPath, portCSVPath);
-            DataContext = dataPointViewModel;
+            Loaded += OnWindowLoaded; 
+            
 
-            // 在窗口加载完成后启动任务
-            Loaded += OnWindowLoaded;
         }
 
         private void HisBtnClicked(object sender, RoutedEventArgs e)
         {
             HisBtn.IsEnabled = false;
-            var hisTrendWindow = new HisTrendWindow(hisCSVPath, dataCSVPath, dataPointViewModel);
+            hisTrendWindow = new HisTrendWindow(mainViewModel.hisCSVPath, mainViewModel.dataCSVPath, mainViewModel.recordLock);
             hisTrendWindow.Show();
             hisTrendWindow.Closed += OnHisWindowClosed;
         }
@@ -52,10 +49,26 @@ namespace ModbusWPF.Views
         {
             HisBtn.IsEnabled = true;
         }
+
+        private void RealBtnClicked(object sender, RoutedEventArgs e)
+        {
+            RealBtn.IsEnabled = false;
+            mainViewModel.RealTimePlotViewModel = new RealTimePlotViewModel();
+            mainViewModel.InitializeLineSreies();
+            realTrendWindow = new RealTrend(mainViewModel.RealTimePlotViewModel);
+            realTrendWindow.Show();
+            realTrendWindow.Closed += OnRealWindowClosed;
+        }
+
+        private void OnRealWindowClosed(object sender, EventArgs e)
+        {
+            RealBtn.IsEnabled = true;
+        }
+
         private void OnWindowLoaded(object sender, RoutedEventArgs args)
         {
-            Task.Run(() => dataPointViewModel.StartTasks(100));
-            Task.Run(() => dataPointViewModel.RecordData(hisCSVPath, 10));
+            Task.Run(() => mainViewModel.DataPointViewModel.StartTasks(100));
+            Task.Run(() => mainViewModel.RecordData(10));
         }
 
         private void MainGrid_MouseDown(object sender, MouseButtonEventArgs e)

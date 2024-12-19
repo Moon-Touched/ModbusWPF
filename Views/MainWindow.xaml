@@ -11,17 +11,17 @@
 
     <Grid x:Name="MainGrid" MouseDown="MainGrid_MouseDown" Background="Transparent">
         <mah:ToggleSwitch Header="手动" mah:HeaderedControlHelper.HeaderFontSize="{DynamicResource GlobalFontSize}"  FontSize="{DynamicResource GlobalFontSize}" 
-                          IsOn="{Binding DataPointsDictionary[Auto_Manual].Value, Mode=TwoWay}" Margin="82,86,0,0" VerticalAlignment="Top" Height="100" Width="195"/>
+                          IsOn="{Binding DataPointViewModel.DataPointsDictionary[Auto_Manual].Value, Mode=TwoWay}" Margin="82,86,0,0" VerticalAlignment="Top" Height="100" Width="195"/>
 
         <mah:ToggleSwitch Header="Alarm_1" mah:HeaderedControlHelper.HeaderFontSize="{DynamicResource GlobalFontSize}"  FontSize="{DynamicResource GlobalFontSize}" 
-                          IsOn="{Binding DataPointsDictionary[Alarm_1].Value, Mode=TwoWay}" Margin="286,594,0,0" VerticalAlignment="Top" Height="82" Width="250"
+                          IsOn="{Binding DataPointViewModel.DataPointsDictionary[Alarm_1].Value, Mode=TwoWay}" Margin="286,594,0,0" VerticalAlignment="Top" Height="82" Width="250"
                           IsHitTestVisible="False"
                           OffContent=""
                           OnContent="Alarm1报警"/>
 
         <StackPanel Height="80" Width="200" Orientation="Vertical" Margin="82,189,1638,776">
             <TextBlock Text="PV" FontSize="{DynamicResource GlobalFontSize}"  HorizontalAlignment="Left"/>
-            <mah:NumericUpDown Value="{Binding DataPointsDictionary[PV].Value, Mode=TwoWay}" HorizontalAlignment="Left" VerticalAlignment="Top" MinWidth="180"
+            <mah:NumericUpDown Value="{Binding DataPointViewModel.DataPointsDictionary[PV].Value, Mode=TwoWay}" HorizontalAlignment="Left" VerticalAlignment="Top" MinWidth="180"
                                IsHitTestVisible="False"
                                TextAlignment="Left"
                                StringFormat="F2"
@@ -30,7 +30,7 @@
 
         <StackPanel Height="80" Width="200" Orientation="Vertical" Margin="82,328,1638,637">
             <TextBlock Text="SV" FontSize="{DynamicResource GlobalFontSize}"  HorizontalAlignment="Left"/>
-            <mah:NumericUpDown Value="{Binding DataPointsDictionary[SV].Value, Mode=TwoWay}" HorizontalAlignment="Left" VerticalAlignment="Top" MinWidth="180"
+            <mah:NumericUpDown Value="{Binding DataPointViewModel.DataPointsDictionary[SV].Value, Mode=TwoWay}" HorizontalAlignment="Left" VerticalAlignment="Top" MinWidth="180"
                                TextAlignment="Left"
                                StringFormat="F2"
                                FontSize="{DynamicResource GlobalFontSize}"
@@ -41,7 +41,7 @@
 
         <StackPanel Height="80" Width="200" Orientation="Vertical" Margin="82,456,1638,509">
             <TextBlock Text="SV_int" FontSize="{DynamicResource GlobalFontSize}"  HorizontalAlignment="Left"/>
-            <mah:NumericUpDown Value="{Binding DataPointsDictionary[SV_int].Value, Mode=TwoWay}" HorizontalAlignment="Left" VerticalAlignment="Top" MinWidth="180"
+            <mah:NumericUpDown Value="{Binding DataPointViewModel.DataPointsDictionary[SV_int].Value, Mode=TwoWay}" HorizontalAlignment="Left" VerticalAlignment="Top" MinWidth="180"
                        TextAlignment="Left"
                        StringFormat="F0"
                        FontSize="{DynamicResource GlobalFontSize}"
@@ -50,7 +50,7 @@
 
         <StackPanel Height="80" Orientation="Vertical" Margin="86,596,1604,389">
             <TextBlock Text="Alarm_1_Value" FontSize="{DynamicResource GlobalFontSize}"  HorizontalAlignment="Left"/>
-            <mah:NumericUpDown Value="{Binding DataPointsDictionary[Alarm_1_Value].Value, Mode=TwoWay}" HorizontalAlignment="Left" VerticalAlignment="Top" MinWidth="180"
+            <mah:NumericUpDown Value="{Binding DataPointViewModel.DataPointsDictionary[Alarm_1_Value].Value, Mode=TwoWay}" HorizontalAlignment="Left" VerticalAlignment="Top" MinWidth="180"
                        TextAlignment="Left"
                        StringFormat="F2"
                        FontSize="{DynamicResource GlobalFontSize}"
@@ -60,7 +60,7 @@
         <Button x:Name="HisBtn" Content="历史趋势" Margin="733,623,1092,389"  Click="HisBtnClicked"/>
         <StackPanel Height="80" Width="200" Orientation="Vertical" Margin="502,338,1218,647">
             <TextBlock Text="vitrual_int" FontSize="{DynamicResource GlobalFontSize}"  HorizontalAlignment="Left"/>
-            <mah:NumericUpDown Value="{Binding DataPointsDictionary[vitrual_int].Value, Mode=TwoWay}" HorizontalAlignment="Left" VerticalAlignment="Top" MinWidth="180"
+            <mah:NumericUpDown Value="{Binding DataPointViewModel.DataPointsDictionary[vitrual_int].Value, Mode=TwoWay}" HorizontalAlignment="Left" VerticalAlignment="Top" MinWidth="180"
                 TextAlignment="Left"
                 StringFormat="F0"
                 FontSize="{DynamicResource GlobalFontSize}"
@@ -68,12 +68,13 @@
         </StackPanel>
         <StackPanel Height="80" Width="200" Orientation="Vertical" Margin="502,466,1218,519">
             <TextBlock Text="vitrual_float" FontSize="{DynamicResource GlobalFontSize}"  HorizontalAlignment="Left"/>
-            <mah:NumericUpDown Value="{Binding DataPointsDictionary[vitrual_float].Value, Mode=TwoWay}" HorizontalAlignment="Left" VerticalAlignment="Top" MinWidth="180"
+            <mah:NumericUpDown Value="{Binding DataPointViewModel.DataPointsDictionary[vitrual_float].Value, Mode=TwoWay}" HorizontalAlignment="Left" VerticalAlignment="Top" MinWidth="180"
                 TextAlignment="Left"
                 StringFormat="F2"
                 FontSize="{DynamicResource GlobalFontSize}"
                 Interval="0.5"/>
         </StackPanel>
+        <Button x:Name="RealBtn" Content="实时趋势" Margin="733,725,1092,287"  Click="RealBtnClicked"/>
     </Grid>
 </Window>
 

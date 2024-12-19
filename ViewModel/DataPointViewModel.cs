@@ -16,17 +16,15 @@ namespace ModbusWPF.ViewModel
 {
     public class DataPointViewModel
     {
-        public ModBusHelper ModbusHelper { get; set; }
+        private ModBusHelper modbusHelper;
         public Dictionary<string, DataPointBase> DataPointsDictionary { get; set; }
-        public Dictionary<string, Stack<(string taskType, DataPointBase dataPoint)>> TaskStackDictionary { get; set; }
+        private Dictionary<string, Stack<(string taskType, DataPointBase dataPoint)>> taskStackDictionary;
 
-        public readonly object RecordLock = new object();
-
-        public DataPointViewModel(string dataCSVPath, string portCSVPath)
+        public DataPointViewModel(string dataCSVPath, string portCSVPath,object recordLock)
         {
-            ModbusHelper = new ModBusHelper(portCSVPath);
+            modbusHelper = new ModBusHelper(portCSVPath);
             DataPointsDictionary = new Dictionary<string, DataPointBase>();
-            TaskStackDictionary = new Dictionary<string, Stack<(string taskType, DataPointBase dataPoint)>>();
+            taskStackDictionary = new Dictionary<string, Stack<(string taskType, DataPointBase dataPoint)>>();
             LoadDataPointsFromCsv(dataCSVPath);
         }
 
@@ -65,7 +63,7 @@ namespace ModbusWPF.ViewModel
                         throw new InvalidOperationException($"Unsupported data type: {dataType}");
                 }
 
-                ModbusHelper.ReadData(dataPoint);
+                modbusHelper.ReadData(dataPoint);
                 if (!dataPoint.ReadOnly)
                 {
                     dataPoint.PropertyChanged += DataPointPropertyChangedHandler;
@@ -77,16 +75,16 @@ namespace ModbusWPF.ViewModel
 
         public void StartTasks(int delayMilliseconds)
         {
-            foreach (var portName in ModbusHelper.ModbusMasterDictionary.Keys)
+            foreach (var portName in modbusHelper.ModbusMasterDictionary.Keys)
             {
-                TaskStackDictionary[portName] = new Stack<(string taskType, DataPointBase dataPoint)>();
+                taskStackDictionary[portName] = new Stack<(string taskType, DataPointBase dataPoint)>();
                 ProcessTaskQueue(portName, delayMilliseconds);
             }
         }
 
         public async void ProcessTaskQueue(string portName, int delayMilliseconds)
         {
-            var taskStack = TaskStackDictionary[portName];
+            var taskStack = taskStackDictionary[portName];
             while (true)
             {
                 if (taskStack.Count == 0)
@@ -105,11 +103,11 @@ namespace ModbusWPF.ViewModel
 
                     if (taskType == "R")
                     {
-                        ModbusHelper.ReadData(dataPoint);
+                        modbusHelper.ReadData(dataPoint);
                     }
                     else if (taskType == "W")
                     {
-                        ModbusHelper.WriteData(dataPoint);
+                        modbusHelper.WriteData(dataPoint);
                         taskStack.Push(("R", dataPoint));
                     }
                     await Task.Delay(delayMilliseconds);
@@ -122,53 +120,9 @@ namespace ModbusWPF.ViewModel
             var dataPoint = (DataPointBase)sender;
             if (!dataPoint.ReadOnly)
             {
-                TaskStackDictionary[dataPoint.PortName].Push(("W", dataPoint));
+                taskStackDictionary[dataPoint.PortName].Push(("W", dataPoint));
             }
         }
 
-        public async void RecordData(string filePath, int sampleTimeMillisecond)
-        {
-            File.WriteAllText(filePath, $"date,time,{string.Join(",", DataPointsDictionary.Keys)}\n");
-            while (true)
-            {
-                List<string> values = new List<string>();
-                lock (RecordLock)
-                {
-                    foreach (var dataPoint in DataPointsDictionary.Values)
-                    {
-                        switch (dataPoint)
-                        {
-                            case BoolDataPoint boolDataPoint:
-                                values.Add(boolDataPoint.Value.ToString());
-                                break;
-                            case Int16DataPoint int16DataPoint:
-                                values.Add(int16DataPoint.Value.ToString());
-                                break;
-                            case Float32DataPoint float32DataPoint:
-                                values.Add(float32DataPoint.Value.ToString());
-                                break;
-                            case FloatIntDataPoint floatIntDataPoint:
-                                values.Add(floatIntDataPoint.Value.ToString());
-                                break;
-                            case BoolIntDataPoint boolIntDataPoint:
-                                values.Add(boolIntDataPoint.Value.ToString());
-                                break;
-                        }
-                    }
-
-                    var dateTime = DateTime.Now;
-
-                    lock (RecordLock)
-                    {
-                        using (var writer = new StreamWriter(filePath, true))
-                        {
-                            writer.WriteLine($"{dateTime:yyyy-MM-dd},{dateTime:HH:mm:ss.fff},{string.Join(",", values)}");
-                        }
-                    }
-                }
-
-                await Task.Delay(sampleTimeMillisecond);
-            }
-        }
     }
 }

@@ -38,20 +38,20 @@ namespace ModbusWPF.Views
         private Dictionary<string, DataPoint[]> slicedDictionary;
         private Dictionary<string, double[]> fullDictionary;
         private string hisCSVPath;
-        public readonly object RecordLock;
+        public readonly object recordLock;
 
         private PlotModel plotModel;
 
-        public HisTrendWindow(string hisCSVPath, string dataCSVPath, DataPointViewModel dataPointViewModel)
+        public HisTrendWindow(string hisCSVPath, string dataCSVPath, object recordLock)
         {
             InitializeComponent();
             this.WindowState = WindowState.Maximized;
             dataIndexDictionary = new Dictionary<string, int>();
             dataTypeDictionary = new Dictionary<string, string>();
             fullDictionary = new Dictionary<string, double[]>();
-            slicedDictionary=new Dictionary<string, DataPoint[]>();
+            slicedDictionary = new Dictionary<string, DataPoint[]>();
             dateTimeDoubleList = [];
-            RecordLock = dataPointViewModel.RecordLock;
+            this.recordLock = recordLock;
             this.hisCSVPath = hisCSVPath;
             InitializeData(dataCSVPath, this.hisCSVPath);
             CreateCheckboxes();
@@ -75,7 +75,7 @@ namespace ModbusWPF.Views
             }
 
             string[] header;
-            lock (RecordLock)
+            lock (recordLock)
             {
                 header = File.ReadAllLines(hisCSVPath)[0].Split(",");
             }
@@ -98,7 +98,7 @@ namespace ModbusWPF.Views
         private void LoadAllData()
         {
             start = DateTime.Now;
-            lock (RecordLock)
+            lock (recordLock)
             {
                 fullRecord = File.ReadAllLines(hisCSVPath).Skip(1).ToArray();
             }
@@ -115,7 +115,7 @@ namespace ModbusWPF.Views
             {
                 string[] dataStrings = fullRecord[i].Split(",");
                 var dateTime = ParseDateTime(dataStrings[0], dataStrings[1]);
-                dateTimeDoubleList[i] = dateTime.ToOADate()+1;
+                dateTimeDoubleList[i] = dateTime.ToOADate() + 1;
                 foreach (var name in dataTypeDictionary.Keys)
                 {
                     if (dataTypeDictionary[name] == "bool" || dataTypeDictionary[name] == "bool_int")
@@ -143,7 +143,7 @@ namespace ModbusWPF.Views
             foreach (var name in dataTypeDictionary.Keys)
             {
                 fullDictionary[name] = new double[count];
-                slicedDictionary[name]= new DataPoint[count];
+                slicedDictionary[name] = new DataPoint[count];
             }
         }
 
@@ -236,12 +236,12 @@ namespace ModbusWPF.Views
                 slicedDictionary[name] = new DataPoint[length];
                 for (int i = 0; i < length; i++)
                 {
-                    slicedDictionary[name][i] = new DataPoint(dateTimeDoubleList[i + startIndex], fullDictionary[name][i+startIndex]);
+                    slicedDictionary[name][i] = new DataPoint(dateTimeDoubleList[i + startIndex], fullDictionary[name][i + startIndex]);
                 }
             }
 
             end = DateTime.Now;
-            InfoBlock.Text = $"共有{fullRecord.Length}条数据\n截取了{slicedDictionary.Values.First().Length}\n{(end - start).TotalMilliseconds}ms";
+            InfoBlock.Text = $"共有{fullRecord.Length}条数据\n截取了{slicedDictionary.Values.First().Length}\n";
         }
 
         /// <summary>
@@ -250,7 +250,7 @@ namespace ModbusWPF.Views
         private void RefreshChartSeries()
         {
             plotModel = new PlotModel();
-            plotModel.Legends.Add(new Legend { LegendPosition=LegendPosition.RightTop, LegendPlacement=LegendPlacement.Inside});
+            plotModel.Legends.Add(new Legend { LegendPosition = LegendPosition.RightTop, LegendPlacement = LegendPlacement.Inside });
             plotModel.Axes.Add(new DateTimeAxis
             {
                 Position = AxisPosition.Bottom,
@@ -273,8 +273,8 @@ namespace ModbusWPF.Views
             {
                 Title = dataName,
                 ItemsSource = slicedDictionary[dataName],
-                DataFieldX = "DateTime",
-                DataFieldY = "Value",
+                //DataFieldX = "DateTime",
+                //DataFieldY = "Value",
                 Color = lineColorsDictionary[dataName]
             });
 
@@ -288,13 +288,13 @@ namespace ModbusWPF.Views
             minDateTime = dateTimeDoubleList[0];
             maxDateTime = dateTimeDoubleList.Last();
 
-            var min= DateTimeAxis.ToDateTime(minDateTime);
+            var min = DateTimeAxis.ToDateTime(minDateTime);
             StartDate.SelectedDate = min.Date;
             StartHour.Text = min.Hour.ToString("D2");
             StartMinute.Text = min.Minute.ToString("D2");
             StartSecond.Text = min.Second.ToString("D2");
 
-            var max= DateTimeAxis.ToDateTime(maxDateTime);
+            var max = DateTimeAxis.ToDateTime(maxDateTime);
             EndDate.SelectedDate = max.Date;
             EndHour.Text = max.Hour.ToString("D2");
             EndMinute.Text = max.Minute.ToString("D2");
@@ -333,7 +333,7 @@ namespace ModbusWPF.Views
             if (!ValidateTime(minHourString, minMinuteString, minSecondString)) return false;
             if (!ValidateTime(maxHourString, maxMinuteString, maxSecondString)) return false;
 
-            minDateTime =DateTimeAxis.ToDouble( ParseDateTime(minDateString, $"{minHourString}:{minMinuteString}:{minSecondString}"));
+            minDateTime = DateTimeAxis.ToDouble(ParseDateTime(minDateString, $"{minHourString}:{minMinuteString}:{minSecondString}"));
             maxDateTime = DateTimeAxis.ToDouble(ParseDateTime(maxDateString, $"{maxHourString}:{maxMinuteString}:{maxSecondString}"));
 
             if (minDateTime > maxDateTime)
