@@ -1,16 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using OxyPlot;
+using OxyPlot.Axes;
+using OxyPlot.Legends;
+using OxyPlot.Series;
 using System.IO;
 using System.Windows;
 using System.Windows.Controls;
-using ModbusWPF.ViewModel;
-using OxyPlot;
-using OxyPlot.Series;
-using OxyPlot.Axes;
-using OxyPlot.Legends;
-using OxyPlot.Utilities;
-using System.Xml.Linq;
 
 namespace ModbusWPF.Views
 {

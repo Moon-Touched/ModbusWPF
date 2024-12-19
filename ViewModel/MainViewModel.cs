@@ -1,13 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.IO;
-using System.Threading.Tasks;
-using ModbusWPF.ViewModel;
-using ModbusWPF.Models;
+﻿using ModbusWPF.Models;
 using OxyPlot;
 using OxyPlot.Series;
+using System.IO;
 
 namespace ModbusWPF.ViewModel
 {
@@ -72,7 +66,7 @@ namespace ModbusWPF.ViewModel
                             break;
                         case Int16DataPoint int16DataPoint:
                             valueStrings.Add(int16DataPoint.Value.ToString());
-                            AddPointToSeries(dataPoint.Name,dateTime, int16DataPoint.Value);
+                            AddPointToSeries(dataPoint.Name, dateTime, int16DataPoint.Value);
                             break;
                         case Float32DataPoint float32DataPoint:
                             valueStrings.Add(float32DataPoint.Value.ToString());

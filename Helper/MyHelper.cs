@@ -1,16 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.IO.Ports;
+﻿using ModbusWPF.Models;
 using NModbus;
 using NModbus.Serial;
-using NModbus.IO;
-using ModbusWPF.Models;
-using NModbus.Device;
-using System.Diagnostics;
+using System.IO;
+using System.IO.Ports;
 using System.Windows;
-using System.Globalization;
-using System.Windows.Controls;
 
 namespace ModbusWPF.Helper
 {

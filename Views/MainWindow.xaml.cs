@@ -1,17 +1,6 @@
-﻿using System.Diagnostics;
-using System.Text;
+﻿using ModbusWPF.ViewModel;
 using System.Windows;
-using System.IO;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Threading;
-using ModbusWPF.Models;
-using ModbusWPF.ViewModel;
 
 namespace ModbusWPF.Views
 {
@@ -29,11 +18,11 @@ namespace ModbusWPF.Views
             this.WindowState = WindowState.Maximized;
             string basePath = "C:/ModbusWPF data";
             mainViewModel = new MainViewModel(basePath);
-           
+
             DataContext = mainViewModel;
 
-            Loaded += OnWindowLoaded; 
-            
+            Loaded += OnWindowLoaded;
+
 
         }
 

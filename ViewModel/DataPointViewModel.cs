@@ -1,16 +1,7 @@
-using System.Collections.ObjectModel;
-using System.ComponentModel.DataAnnotations;
-using System.IO;
-using System.Linq;
-using ModbusWPF.Models;
 using ModbusWPF.Helper;
+using ModbusWPF.Models;
 using System.ComponentModel;
-using System.Diagnostics.Eventing.Reader;
-using System.Windows.Threading;
-using static ModbusWPF.Models.Float32DataPoint;
-using System.Diagnostics;
-using System.Xml.Linq;
-using System.Diagnostics.Metrics;
+using System.IO;
 
 namespace ModbusWPF.ViewModel
 {
@@ -20,7 +11,7 @@ namespace ModbusWPF.ViewModel
         public Dictionary<string, DataPointBase> DataPointsDictionary { get; set; }
         private Dictionary<string, Stack<(string taskType, DataPointBase dataPoint)>> taskStackDictionary;
 
-        public DataPointViewModel(string dataCSVPath, string portCSVPath,object recordLock)
+        public DataPointViewModel(string dataCSVPath, string portCSVPath, object recordLock)
         {
             modbusHelper = new ModBusHelper(portCSVPath);
             DataPointsDictionary = new Dictionary<string, DataPointBase>();
